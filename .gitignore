@@ -1,0 +1,44 @@
+# ---- .NET ----
+bin/
+obj/
+*.user
+*.suo
+.vs/
+artifacts/
+[Dd]ebug/
+[Rr]elease/
+*.nupkg
+*.snupkg
+project.lock.json
+
+# ---- Rider / VS ----
+.idea/
+*.DotSettings.user
+
+# ---- Secrets / config local ----
+appsettings.*.local.json
+*.env
+.env
+secrets.json
+
+# ---- Angular / Node (clients/web) ----
+node_modules/
+clients/web/dist/
+clients/web/.angular/
+npm-debug.log*
+yarn-error.log*
+
+# ---- Flutter (clients/mobile) ----
+clients/mobile/.dart_tool/
+clients/mobile/build/
+clients/mobile/.flutter-plugins
+clients/mobile/.flutter-plugins-dependencies
+*.iml
+
+# ---- Claude Code (config personal) ----
+.claude/settings.local.json
+
+# ---- OS ----
+Thumbs.db
+Desktop.ini
+.DS_Store
