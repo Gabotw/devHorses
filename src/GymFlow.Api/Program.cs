@@ -1,4 +1,5 @@
 using System.Text;
+using GymFlow.Api.Infrastructure;
 using GymFlow.Api.Multitenancy;
 using GymFlow.Api.Security;
 using GymFlow.Application;
@@ -42,8 +43,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
-builder.Services.AddControllers();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(Policies.Manager, p => p.RequireRole(Policies.ManagerRoles));
+    options.AddPolicy(Policies.Staff, p => p.RequireRole(Policies.StaffRoles));
+});
+
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ApiExceptionFilter>();
+});
 builder.Services.AddOpenApi();
 
 var app = builder.Build();

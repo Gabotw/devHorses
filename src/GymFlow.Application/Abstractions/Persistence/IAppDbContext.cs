@@ -12,6 +12,9 @@ public interface IAppDbContext
 {
     DbSet<Tenant> Tenants { get; }
     DbSet<StaffUser> StaffUsers { get; }
+    DbSet<Member> Members { get; }
+    DbSet<MembershipPlan> MembershipPlans { get; }
+    DbSet<Membership> Memberships { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

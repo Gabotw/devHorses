@@ -26,6 +26,9 @@ public sealed class AppDbContext(
 
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<StaffUser> StaffUsers => Set<StaffUser>();
+    public DbSet<Member> Members => Set<Member>();
+    public DbSet<MembershipPlan> MembershipPlans => Set<MembershipPlan>();
+    public DbSet<Membership> Memberships => Set<Membership>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,6 +39,9 @@ public sealed class AppDbContext(
 
         // Filtro global por tenant para toda entidad ITenantScoped.
         modelBuilder.Entity<StaffUser>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<Member>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<MembershipPlan>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<Membership>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
     }
 
     public override int SaveChanges()

@@ -1,7 +1,9 @@
 using GymFlow.Application.Abstractions.Persistence;
 using GymFlow.Application.Abstractions.Security;
+using GymFlow.Application.Abstractions.Time;
 using GymFlow.Infrastructure.Persistence;
 using GymFlow.Infrastructure.Security;
+using GymFlow.Infrastructure.Time;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +26,7 @@ public static class DependencyInjection
 
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+        services.AddSingleton<IClock, SystemClock>();
         services.AddScoped<AppDbSeeder>();
 
         return services;
