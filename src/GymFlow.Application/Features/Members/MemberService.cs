@@ -56,7 +56,7 @@ public sealed class MemberService(IAppDbContext db, ITenantProvider tenant) : IM
         var member = new Member(
             tenant.GetRequiredTenantId(),
             request.FullName,
-            request.DocumentId,
+            doc,
             request.Phone,
             request.Email,
             request.PhotoUrl);
@@ -75,7 +75,7 @@ public sealed class MemberService(IAppDbContext db, ITenantProvider tenant) : IM
         await EnsureDocumentUniqueAsync(doc, excludeId: id, ct);
 
         member.SetFullName(request.FullName);
-        member.SetDocumentId(request.DocumentId);
+        member.SetDocumentId(doc);
         member.SetContact(request.Phone, request.Email);
         member.SetPhoto(request.PhotoUrl);
 

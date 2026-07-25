@@ -21,6 +21,7 @@ namespace GymFlow.Api.Multitenancy;
 public sealed class TenantResolutionMiddleware(RequestDelegate next)
 {
     private const string TenantHeader = "X-Tenant-Id";
+    private const string TenantSubdomainHeader = "X-Tenant-Subdomain";
 
     public async Task InvokeAsync(HttpContext context, ITenantProvider tenantProvider, AppDbContext db)
     {
@@ -52,9 +53,13 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next)
         }
         else
         {
-            resolved = TryGetHeaderTenant(context) is { } headerTenant
-                ? await ValidateTenantExistsAsync(headerTenant, db)
-                : await TryGetSubdomainTenantIdAsync(context, db);
+            // Prioridad anónima: X-Tenant-Id (guid) > X-Tenant-Subdomain (slug) > host.
+            if (TryGetHeaderTenant(context) is { } headerTenant)
+                resolved = await ValidateTenantExistsAsync(headerTenant, db);
+            else if (GetSubdomainHeader(context) is { } slug)
+                resolved = await ResolveBySubdomainAsync(slug, db);
+            else
+                resolved = await TryGetSubdomainTenantIdAsync(context, db);
         }
 
         if (resolved is null)
@@ -92,18 +97,26 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next)
         return exists ? tenantId : null;
     }
 
-    private static async Task<Guid?> TryGetSubdomainTenantIdAsync(HttpContext context, AppDbContext db)
+    private static string? GetSubdomainHeader(HttpContext context)
     {
-        var host = context.Request.Host.Host; // sin puerto
-        var subdomain = ExtractSubdomain(host);
-        if (subdomain is null)
-            return null;
+        var raw = context.Request.Headers[TenantSubdomainHeader].ToString();
+        return string.IsNullOrWhiteSpace(raw) ? null : raw.Trim().ToLowerInvariant();
+    }
 
+    private static async Task<Guid?> ResolveBySubdomainAsync(string subdomain, AppDbContext db)
+    {
         var tenant = await db.Tenants
             .Where(t => t.Subdomain == subdomain)
             .Select(t => new { t.Id })
             .FirstOrDefaultAsync();
         return tenant?.Id;
+    }
+
+    private static async Task<Guid?> TryGetSubdomainTenantIdAsync(HttpContext context, AppDbContext db)
+    {
+        var host = context.Request.Host.Host; // sin puerto
+        var subdomain = ExtractSubdomain(host);
+        return subdomain is null ? null : await ResolveBySubdomainAsync(subdomain, db);
     }
 
     /// <summary>

@@ -15,7 +15,7 @@ src/
 ├── GymFlow.Infrastructure/   → ADAPTADORES: EF Core, seguridad, (pagos/Hangfire/Redis futuros).
 ├── GymFlow.Api/              → Controllers, middleware de tenant, JWT, DI.
 clients/
-├── web/    (Angular)         → Fase 1+ (aún no scaffoldeado).
+├── web/    (Angular + PrimeNG) → Panel admin/recepción (login, miembros, planes).
 └── mobile/ (Flutter)         → Fase 4 (aún no scaffoldeado).
 tests/
 └── GymFlow.Domain.Tests/     → xUnit.
@@ -51,7 +51,22 @@ dotnet ef database update      --project src/GymFlow.Infrastructure --startup-pr
 El seed (`AppDbSeeder`) crea el tenant `demo` y un owner `owner@demo.gymflow.pe`
 (password inicial `Cambiar123!`) al arrancar en Development.
 
+## Frontend (clients/web)
+Angular 22 (standalone + signals) + PrimeNG (tema Aura). Dev server con proxy
+(`proxy.conf.json`) que redirige `/api` al backend en `http://localhost:5066`.
+Login pide **gimnasio (subdominio) + correo + contraseña**: en localhost no hay
+subdominio, así que el front envía la cabecera `X-Tenant-Subdomain` solo en el login;
+tras autenticar, el tenant viaja en el claim del JWT. El JWT se guarda en localStorage
+y un interceptor lo adjunta; ante 401 cierra sesión.
+```bash
+cd clients/web
+npm start   # ng serve con proxy → http://localhost:4200
+npm run build
+```
+
 ## Estado del roadmap
 - ✅ **Fase 0** — Fundaciones: 4 capas, multi-tenancy, JWT + RBAC, seed, migración inicial, CI.
-- ⏭️ **Fase 1** — Miembros & Membresías (siguiente).
+- ✅ **Fase 1** — Miembros & Membresías: CRUD miembros/planes, membresías con estados
+  (activa/congelada/vencida), panel Angular (login, miembros, planes).
+- ⏭️ **Fase 2** — Pagos (siguiente): pago manual, IPaymentGateway/Culqi, morosidad, Hangfire.
 - Deploy Railway/Neon: pendiente de credenciales.

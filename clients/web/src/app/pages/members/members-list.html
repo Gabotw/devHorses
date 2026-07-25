@@ -1,0 +1,141 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Miembros</h1>
+    <p-button label="Nuevo miembro" icon="pi pi-plus" (onClick)="openNew()" />
+  </div>
+
+  <div class="toolbar">
+    <span class="p-input-icon-left">
+      <input pInputText type="text" [(ngModel)]="search" (keyup.enter)="onSearch()"
+        placeholder="Buscar por nombre o documento" style="min-width: 260px" />
+    </span>
+    <p-button label="Buscar" icon="pi pi-search" severity="secondary" (onClick)="onSearch()" />
+  </div>
+
+  <p-table
+    [value]="members()"
+    [loading]="loading()"
+    [paginator]="true"
+    [rows]="pageSize"
+    [totalRecords]="total()"
+    [lazy]="true"
+    (onLazyLoad)="onPage($event)"
+    [tableStyle]="{ 'min-width': '60rem' }"
+    dataKey="id"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th>Documento</th>
+        <th>Teléfono</th>
+        <th>Estado</th>
+        <th style="width: 15rem">Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-m>
+      <tr>
+        <td>{{ m.fullName }}</td>
+        <td>{{ m.documentId }}</td>
+        <td>{{ m.phone || '—' }}</td>
+        <td>
+          <p-tag [value]="statusLabel[m.status]" [severity]="m.status === 1 ? 'success' : 'secondary'" />
+        </td>
+        <td>
+          <div class="row-actions">
+            <p-button icon="pi pi-id-card" severity="secondary" [text]="true"
+              pTooltip="Membresías" (onClick)="openMemberships(m)" ariaLabel="Membresías" />
+            <p-button icon="pi pi-pencil" severity="secondary" [text]="true"
+              (onClick)="openEdit(m)" ariaLabel="Editar" />
+            @if (auth.isManager()) {
+              <p-button
+                [icon]="m.status === 1 ? 'pi pi-ban' : 'pi pi-check'"
+                [severity]="m.status === 1 ? 'danger' : 'success'"
+                [text]="true" (onClick)="toggleActive(m)"
+                [ariaLabel]="m.status === 1 ? 'Desactivar' : 'Activar'" />
+            }
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="5">Sin miembros todavía.</td></tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Alta / edición -->
+<p-dialog [visible]="showForm()" (visibleChange)="showForm.set($event)" [modal]="true" [style]="{ width: '480px' }"
+  [header]="editing() ? 'Editar miembro' : 'Nuevo miembro'" [closable]="true">
+  <div class="field">
+    <label for="fullName">Nombre completo *</label>
+    <input pInputText id="fullName" [(ngModel)]="form.fullName" />
+  </div>
+  <div class="grid-2">
+    <div class="field">
+      <label for="doc">Documento *</label>
+      <input pInputText id="doc" [(ngModel)]="form.documentId" />
+    </div>
+    <div class="field">
+      <label for="phone">Teléfono</label>
+      <input pInputText id="phone" [(ngModel)]="form.phone" />
+    </div>
+  </div>
+  <div class="field">
+    <label for="email">Correo</label>
+    <input pInputText id="email" [(ngModel)]="form.email" />
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showForm.set(false)" />
+    <p-button label="Guardar" icon="pi pi-check" [loading]="saving()" (onClick)="saveMember()" />
+  </ng-template>
+</p-dialog>
+
+<!-- Membresías del miembro -->
+<p-dialog [visible]="showMemberships()" (visibleChange)="showMemberships.set($event)" [modal]="true" [style]="{ width: '640px' }"
+  [header]="'Membresías · ' + (selectedMember()?.fullName ?? '')" [closable]="true">
+
+  <div class="assign">
+    <div class="field">
+      <label>Asignar plan</label>
+      <p-select [options]="activePlans()" optionLabel="name" optionValue="id"
+        [(ngModel)]="planToAssign" placeholder="Selecciona un plan" appendTo="body"
+        [style]="{ width: '100%' }" />
+    </div>
+    <div class="field">
+      <label>Inicio (opcional)</label>
+      <p-datepicker [(ngModel)]="assignStart" dateFormat="yy-mm-dd" appendTo="body"
+        placeholder="Hoy" [showIcon]="true" />
+    </div>
+    <p-button label="Asignar" icon="pi pi-plus" (onClick)="assignPlan()" />
+  </div>
+
+  <h3>Historial</h3>
+  @if (history().length === 0) {
+    <p class="muted">Este miembro aún no tiene membresías.</p>
+  } @else {
+    <table class="hist">
+      <thead>
+        <tr><th>Inicio</th><th>Fin</th><th>Precio</th><th>Estado</th><th></th></tr>
+      </thead>
+      <tbody>
+        @for (h of history(); track h.id) {
+          <tr>
+            <td>{{ h.startDate }}</td>
+            <td>{{ h.endDate }}</td>
+            <td>S/ {{ h.priceAtPurchase | number: '1.2-2' }}</td>
+            <td><p-tag [value]="membershipStatusLabel[h.status]" [severity]="statusSeverity(h.status)" /></td>
+            <td>
+              @if (h.status === 1) {
+                <p-button label="Congelar" icon="pi pi-pause" size="small" severity="warn"
+                  [text]="true" (onClick)="freeze(h)" />
+              } @else if (h.status === 2) {
+                <p-button label="Reactivar" icon="pi pi-play" size="small" severity="success"
+                  [text]="true" (onClick)="unfreeze(h)" />
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</p-dialog>

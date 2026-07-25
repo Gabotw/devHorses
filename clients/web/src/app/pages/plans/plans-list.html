@@ -1,0 +1,84 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Planes</h1>
+    @if (auth.isManager()) {
+      <p-button label="Nuevo plan" icon="pi pi-plus" (onClick)="openNew()" />
+    }
+  </div>
+
+  <div class="toolbar">
+    <p-button
+      [label]="includeInactive ? 'Ocultar inactivos' : 'Mostrar inactivos'"
+      [icon]="includeInactive ? 'pi pi-eye-slash' : 'pi pi-eye'"
+      severity="secondary" [text]="true"
+      (onClick)="includeInactive = !includeInactive; load()" />
+  </div>
+
+  <p-table [value]="plans()" [loading]="loading()" [tableStyle]="{ 'min-width': '50rem' }" dataKey="id">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th>Precio</th>
+        <th>Duración</th>
+        <th>Accesos/mes</th>
+        <th>Estado</th>
+        @if (auth.isManager()) { <th style="width: 11rem">Acciones</th> }
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-p>
+      <tr>
+        <td>{{ p.name }}</td>
+        <td>S/ {{ p.price | number: '1.2-2' }}</td>
+        <td>{{ p.durationDays }} días</td>
+        <td>{{ p.monthlyAccesses ?? 'Ilimitado' }}</td>
+        <td>
+          <p-tag [value]="p.isActive ? 'Activo' : 'Inactivo'"
+            [severity]="p.isActive ? 'success' : 'secondary'" />
+        </td>
+        @if (auth.isManager()) {
+          <td>
+            <div class="row-actions">
+              <p-button icon="pi pi-pencil" severity="secondary" [text]="true"
+                (onClick)="openEdit(p)" ariaLabel="Editar" />
+              <p-button
+                [icon]="p.isActive ? 'pi pi-ban' : 'pi pi-check'"
+                [severity]="p.isActive ? 'danger' : 'success'"
+                [text]="true" (onClick)="toggleActive(p)"
+                [ariaLabel]="p.isActive ? 'Desactivar' : 'Activar'" />
+            </div>
+          </td>
+        }
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="6">Aún no hay planes. Crea el primero.</td></tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [visible]="showForm()" (visibleChange)="showForm.set($event)" [modal]="true"
+  [style]="{ width: '460px' }" [header]="editing() ? 'Editar plan' : 'Nuevo plan'" [closable]="true">
+  <div class="field">
+    <label for="name">Nombre *</label>
+    <input pInputText id="name" [(ngModel)]="form.name" placeholder="Mensual, Trimestral…" />
+  </div>
+  <div class="grid-2">
+    <div class="field">
+      <label for="price">Precio (S/) *</label>
+      <p-inputnumber inputId="price" [(ngModel)]="form.price" mode="currency"
+        currency="PEN" locale="es-PE" [min]="0" />
+    </div>
+    <div class="field">
+      <label for="dur">Duración (días) *</label>
+      <p-inputnumber inputId="dur" [(ngModel)]="form.durationDays" [min]="1" [showButtons]="true" />
+    </div>
+  </div>
+  <div class="field">
+    <label for="acc">Accesos por mes (vacío = ilimitado)</label>
+    <p-inputnumber inputId="acc" [(ngModel)]="form.monthlyAccesses" [min]="0" />
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showForm.set(false)" />
+    <p-button label="Guardar" icon="pi pi-check" [loading]="saving()" (onClick)="save()" />
+  </ng-template>
+</p-dialog>

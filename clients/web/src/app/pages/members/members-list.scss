@@ -1,0 +1,46 @@
+.row-actions {
+  display: flex;
+  gap: 0.15rem;
+}
+
+.assign {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 1rem;
+  align-items: end;
+  padding: 0.5rem 0 1rem;
+  border-bottom: 1px solid var(--p-content-border-color, #e5e7eb);
+  margin-bottom: 1rem;
+}
+
+.assign .p-button {
+  height: fit-content;
+}
+
+h3 {
+  margin: 0.5rem 0 0.75rem;
+  font-size: 1rem;
+}
+
+table.hist {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table.hist th,
+table.hist td {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--p-content-border-color, #eef0f2);
+  font-size: 0.9rem;
+}
+
+.muted {
+  color: #6b7280;
+}
+
+@media (max-width: 640px) {
+  .assign {
+    grid-template-columns: 1fr;
+  }
+}
