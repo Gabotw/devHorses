@@ -16,7 +16,7 @@ src/
 ├── GymFlow.Api/              → Controllers, middleware de tenant, JWT, DI.
 clients/
 ├── web/    (Angular + PrimeNG) → Panel admin/recepción (login, miembros, planes).
-└── mobile/ (Flutter)         → Fase 4 (aún no scaffoldeado).
+└── mobile/ (Flutter)         → App del miembro (login, mi plan, check-in, historial).
 tests/
 └── GymFlow.Domain.Tests/     → xUnit.
 ```
@@ -75,9 +75,30 @@ npm run build
   membresía vigente (ingresos no válidos se guardan como traza), aforo en tiempo real
   por SignalR (`/hubs/occupancy`, backplane Redis opcional) y asistencia del día.
   Panel: página Check-in (buscar miembro, registrar, aforo en vivo, asistencia).
-- ⏭️ **Fase 4** — App móvil Flutter (siguiente): login del miembro, ver membresía/estado,
-  check-in desde la app, historial.
+- 🚧 **Fase 4** — App móvil Flutter: app scaffoldeada (`clients/mobile`) con login del
+  miembro (DNI + contraseña + gimnasio), Mi plan, Check-in e Historial (asistencia/pagos).
+  **Falta el backend del miembro** (ver abajo) para que consuma datos reales.
+- ⏭️ **Fase 5** — Reportes & Dashboard: ingresos, morosidad, churn, ocupación por hora.
 - Deploy Railway/Neon: pendiente de credenciales.
+
+## App móvil del miembro (Fase 4)
+Flutter 3.44 (Material 3), en `clients/mobile`. Estado: `AuthService` (ChangeNotifier) con
+JWT en `SharedPreferences`; `MemberApi` (paquete `http`). Config del backend en
+`lib/config.dart` (`--dart-define=API_BASE_URL=...`; emulador Android usa `10.0.2.2`).
+```bash
+cd clients/mobile
+flutter run              # requiere Android SDK (Android Studio) para dispositivo/emulador
+flutter run -d chrome    # web, para probar sin Android
+flutter analyze && flutter test && flutter build web
+```
+**Backend del miembro — PENDIENTE (prerequisito para datos reales).** La app espera:
+- `POST /api/member-auth/login` (header `X-Tenant-Subdomain`, body `{documentId, password}`)
+  → `{accessToken, expiresAtUtc, memberId, fullName}`. Requiere dar credenciales al `Member`
+  (hoy no tiene password) — reusar `IPasswordHasher`; emitir JWT con `tenant_id` + `sub`.
+- `GET /api/me/membership` → membresía vigente del miembro autenticado (o 204).
+- `GET /api/me/checkins`, `GET /api/me/payments` → historial del propio miembro.
+- `POST /api/me/checkins` → auto check-in (método `App`), reusa la lógica de `CheckInService`.
+El tenant sale del JWT; los endpoints `/me/*` deben acotar por `sub` (memberId), no por staff.
 
 ## Check-in & aforo (Fase 3)
 - `CheckIn` (ITenantScoped) guarda `OccurredAtUtc` + `LocalDate` (día en zona del tenant)
