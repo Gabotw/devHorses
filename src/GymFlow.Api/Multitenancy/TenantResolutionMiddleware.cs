@@ -142,6 +142,7 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next)
         return path.StartsWith("/health", StringComparison.OrdinalIgnoreCase)
             || path.StartsWith("/openapi", StringComparison.OrdinalIgnoreCase)
             || path.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("/hangfire", StringComparison.OrdinalIgnoreCase)
             || path == "/";
     }
 

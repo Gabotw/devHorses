@@ -71,9 +71,22 @@ npm run build
 - ✅ **Fase 2** — Pagos: registro de pago manual (efectivo), `IPaymentGateway` + adaptador
   Culqi, morosidad (`MembershipStatus.Overdue`) y job diario Hangfire (`overdue-sweep`).
   Panel: registrar pago e historial en el diálogo de membresías.
-- ⏭️ **Fase 3** — Check-in & Asistencia (siguiente): recepción valida membresía activa,
-  aforo en tiempo real (Redis + SignalR), registro de asistencia.
+- ✅ **Fase 3** — Check-in & Asistencia: registro de ingreso en recepción validando
+  membresía vigente (ingresos no válidos se guardan como traza), aforo en tiempo real
+  por SignalR (`/hubs/occupancy`, backplane Redis opcional) y asistencia del día.
+  Panel: página Check-in (buscar miembro, registrar, aforo en vivo, asistencia).
+- ⏭️ **Fase 4** — App móvil Flutter (siguiente): login del miembro, ver membresía/estado,
+  check-in desde la app, historial.
 - Deploy Railway/Neon: pendiente de credenciales.
+
+## Check-in & aforo (Fase 3)
+- `CheckIn` (ITenantScoped) guarda `OccurredAtUtc` + `LocalDate` (día en zona del tenant)
+  e `IsValid`/`Reason`. El aforo del día = ingresos válidos con `LocalDate == hoy`.
+- Tiempo real: puerto `IOccupancyNotifier` (Application) → adaptador `SignalROccupancyNotifier`
+  (Api) que difunde `occupancyChanged` al grupo `tenant:{id}`. El JWT viaja por query string
+  en el handshake del hub (ver `OnMessageReceived`). Con `ConnectionStrings:Redis` se activa
+  el backplane Redis (solo necesario con varias instancias de la Api).
+- Front: `@microsoft/signalr` conecta a `/hubs/occupancy` (proxied en dev con `ws:true`).
 
 ## Pagos (Fase 2)
 - Pasarela **siempre** detrás de `IPaymentGateway` (Application); el único adaptador que

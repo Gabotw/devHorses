@@ -1,8 +1,10 @@
 using System.Text;
 using GymFlow.Api.Infrastructure;
 using GymFlow.Api.Multitenancy;
+using GymFlow.Api.Realtime;
 using GymFlow.Api.Security;
 using GymFlow.Application;
+using GymFlow.Application.Abstractions.Realtime;
 using GymFlow.Application.Abstractions.Security;
 using GymFlow.Application.Abstractions.Tenancy;
 using GymFlow.Infrastructure;
@@ -44,6 +46,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30),
         };
+
+        // SignalR (WebSocket) no puede mandar el header Authorization: el token llega por
+        // query string en el handshake del hub. Solo se acepta para rutas /hubs.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    context.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            },
+        };
     });
 
 builder.Services.AddAuthorization(options =>
@@ -57,6 +75,17 @@ builder.Services.AddControllers(options =>
     options.Filters.Add<ApiExceptionFilter>();
 });
 builder.Services.AddOpenApi();
+
+// --- Tiempo real: aforo por SignalR (adaptador del puerto IOccupancyNotifier) ---
+var signalR = builder.Services.AddSignalR();
+
+// Backplane Redis opcional: necesario solo con múltiples instancias de la Api. Si no hay
+// cadena de conexión, SignalR usa memoria (suficiente para una sola instancia en validación).
+var redisConnection = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrWhiteSpace(redisConnection))
+    signalR.AddStackExchangeRedis(redisConnection);
+
+builder.Services.AddScoped<IOccupancyNotifier, SignalROccupancyNotifier>();
 
 var app = builder.Build();
 
@@ -74,6 +103,7 @@ app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<OccupancyHub>("/hubs/occupancy");
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 // Dashboard de Hangfire solo en Development (por defecto solo acepta peticiones locales).

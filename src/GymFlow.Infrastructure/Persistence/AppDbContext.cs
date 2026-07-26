@@ -30,6 +30,7 @@ public sealed class AppDbContext(
     public DbSet<MembershipPlan> MembershipPlans => Set<MembershipPlan>();
     public DbSet<Membership> Memberships => Set<Membership>();
     public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<CheckIn> CheckIns => Set<CheckIn>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,6 +45,7 @@ public sealed class AppDbContext(
         modelBuilder.Entity<MembershipPlan>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<Membership>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<Payment>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<CheckIn>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
     }
 
     public override int SaveChanges()
