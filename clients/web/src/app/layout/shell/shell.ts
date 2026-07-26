@@ -15,6 +15,9 @@ import { AuthService } from '../../core/auth.service';
       </div>
 
       <nav class="nav">
+        <a routerLink="/checkin" routerLinkActive="active">
+          <i class="pi pi-sign-in"></i> Check-in
+        </a>
         <a routerLink="/members" routerLinkActive="active">
           <i class="pi pi-users"></i> Miembros
         </a>

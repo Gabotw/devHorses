@@ -11,7 +11,11 @@ export const routes: Routes = [
     loadComponent: () => import('./layout/shell/shell').then((m) => m.Shell),
     canActivate: [authGuard],
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'members' },
+      { path: '', pathMatch: 'full', redirectTo: 'checkin' },
+      {
+        path: 'checkin',
+        loadComponent: () => import('./pages/checkin/checkin').then((m) => m.CheckInPage),
+      },
       {
         path: 'members',
         loadComponent: () => import('./pages/members/members-list').then((m) => m.MembersList),

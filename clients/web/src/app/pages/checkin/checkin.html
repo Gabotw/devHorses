@@ -1,0 +1,68 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Check-in</h1>
+    <div class="occupancy" aria-live="polite">
+      <span class="count">{{ occupancy() }}</span>
+      <span class="label">en el gimnasio hoy</span>
+    </div>
+  </div>
+
+  <div class="checkin-bar">
+    <p-autocomplete
+      [(ngModel)]="selected"
+      [suggestions]="suggestions()"
+      (completeMethod)="searchMembers($event)"
+      optionLabel="fullName"
+      placeholder="Buscar miembro por nombre o documento"
+      [minQueryLength]="2"
+      [forceSelection]="true"
+      appendTo="body"
+      styleClass="member-search"
+    >
+      <ng-template let-member pTemplate="item">
+        <div class="suggestion">
+          <span class="name">{{ member.fullName }}</span>
+          <small class="doc">{{ member.documentId }}</small>
+        </div>
+      </ng-template>
+    </p-autocomplete>
+    <p-button label="Registrar ingreso" icon="pi pi-sign-in" [loading]="registering()" (onClick)="register()" />
+  </div>
+
+  @if (lastResult(); as r) {
+    <div class="result" [class.ok]="r.checkIn.isValid" [class.bad]="!r.checkIn.isValid">
+      <i [class]="r.checkIn.isValid ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i>
+      <div>
+        <strong>{{ r.checkIn.memberName }}</strong>
+        <span>{{ r.checkIn.isValid ? 'Ingreso registrado' : (r.checkIn.reason || 'Ingreso no válido') }}</span>
+      </div>
+    </div>
+  }
+
+  <h3>Asistencia de hoy</h3>
+  <p-table [value]="today()" [tableStyle]="{ 'min-width': '40rem' }" dataKey="id">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Hora</th>
+        <th>Miembro</th>
+        <th>Resultado</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-c>
+      <tr>
+        <td>{{ c.occurredAtUtc | date: 'HH:mm' }}</td>
+        <td>{{ c.memberName }}</td>
+        <td>
+          @if (c.isValid) {
+            <p-tag value="Válido" severity="success" />
+          } @else {
+            <p-tag [value]="c.reason || 'No válido'" severity="danger" />
+          }
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="3">Sin ingresos hoy.</td></tr>
+    </ng-template>
+  </p-table>
+</div>

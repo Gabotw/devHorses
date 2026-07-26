@@ -4,6 +4,7 @@ export type MemberStatus = 1 | 2; // Active = 1, Inactive = 2
 export type MembershipStatus = 1 | 2 | 3 | 4; // Active, Frozen, Expired, Overdue
 export type PaymentMethod = 1 | 2 | 3; // Cash = 1, Culqi = 2, Izipay = 3
 export type PaymentStatus = 1 | 2 | 3 | 4; // Pending, Completed, Failed, Refunded
+export type CheckInMethod = 1 | 2; // Reception = 1, App = 2
 
 export interface LoginResult {
   accessToken: string;
@@ -57,6 +58,21 @@ export interface Payment {
   paidAtUtc?: string | null;
   notes?: string | null;
   createdAtUtc: string;
+}
+
+export interface CheckIn {
+  id: string;
+  memberId: string;
+  memberName: string;
+  method: CheckInMethod;
+  occurredAtUtc: string;
+  isValid: boolean;
+  reason?: string | null;
+}
+
+export interface CheckInResult {
+  checkIn: CheckIn;
+  occupancy: number;
 }
 
 export interface PagedResult<T> {
