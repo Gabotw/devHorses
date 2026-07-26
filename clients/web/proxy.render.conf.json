@@ -1,0 +1,13 @@
+{
+  "/api": {
+    "target": "https://gymflow-api-rrtn.onrender.com",
+    "secure": true,
+    "changeOrigin": true
+  },
+  "/hubs": {
+    "target": "https://gymflow-api-rrtn.onrender.com",
+    "secure": true,
+    "changeOrigin": true,
+    "ws": true
+  }
+}

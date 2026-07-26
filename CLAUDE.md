@@ -61,7 +61,8 @@ tras autenticar, el tenant viaja en el claim del JWT. El JWT se guarda en localS
 y un interceptor lo adjunta; ante 401 cierra sesión.
 ```bash
 cd clients/web
-npm start   # ng serve con proxy → http://localhost:4200
+npm start          # ng serve con proxy → backend local http://localhost:5066
+npm run start:render  # ng serve apuntando al backend desplegado en Render (proxy.render.conf.json)
 npm run build
 ```
 
