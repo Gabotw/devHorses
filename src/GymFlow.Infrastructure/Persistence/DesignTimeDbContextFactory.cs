@@ -14,8 +14,9 @@ public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<App
 {
     public AppDbContext CreateDbContext(string[] args)
     {
-        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__Default")
-            ?? "Host=localhost;Database=gymflow_design;Username=postgres;Password=postgres";
+        var connectionString = NpgsqlConnectionStringResolver.Resolve(
+            Environment.GetEnvironmentVariable("ConnectionStrings__Default")
+            ?? "Host=localhost;Database=gymflow_design;Username=postgres;Password=postgres");
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(connectionString, npgsql =>

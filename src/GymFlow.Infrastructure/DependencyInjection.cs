@@ -21,9 +21,10 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Default")
-            ?? throw new InvalidOperationException(
-                "Falta la cadena de conexión 'Default' (Postgres/Neon).");
+        var connectionString = NpgsqlConnectionStringResolver.Resolve(
+            configuration.GetConnectionString("Default")
+                ?? throw new InvalidOperationException(
+                    "Falta la cadena de conexión 'Default' (Postgres/Neon)."));
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString, npgsql =>
@@ -50,9 +51,10 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Default")
-            ?? throw new InvalidOperationException(
-                "Falta la cadena de conexión 'Default' (Postgres/Neon).");
+        var connectionString = NpgsqlConnectionStringResolver.Resolve(
+            configuration.GetConnectionString("Default")
+                ?? throw new InvalidOperationException(
+                    "Falta la cadena de conexión 'Default' (Postgres/Neon)."));
 
         services.AddHangfire(config => config
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
