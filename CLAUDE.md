@@ -80,7 +80,23 @@ npm run build
   del miembro (DNI + contraseña + gimnasio), Mi plan, Check-in e Historial (asistencia/pagos),
   consumiendo la API `/member-auth` + `/me/*` (ya implementada, ver abajo).
 - ⏭️ **Fase 5** — Reportes & Dashboard (siguiente): ingresos, morosidad, churn, ocupación por hora.
-- Deploy Railway/Neon: pendiente de credenciales.
+- **Deploy**: DB en **Neon** (conectada vía user-secrets/env). Backend dockerizado para
+  **Render** (`Dockerfile` + `render.yaml`); ver sección "Deploy (Render)".
+
+## Deploy (Render)
+Backend containerizado (`Dockerfile` multi-stage .NET 10) para Render, con blueprint
+`render.yaml` (servicio web Docker, healthCheck `/health`, región `ohio` cerca de Neon).
+- **Puerto**: Render inyecta `PORT`; `Program.cs` bindea Kestrel a `0.0.0.0:$PORT`.
+- **TLS**: la termina el proxy de Render; `UseHttpsRedirection` solo corre en Development.
+- **Migraciones**: se aplican en el arranque en todo entorno (`Database.Migrate()` en `Program`).
+  El seed solo corre en Development o con `Seed:Enabled=true` (poblar el demo una vez).
+- **CORS**: sin `Cors:AllowedOrigins` permite cualquier origen (JWT por header/query, sin
+  cookies); con la lista, restringe y habilita credenciales (para SignalR).
+- **Variables en Render** (secretos, dashboard): `ConnectionStrings__Default` (Neon .NET),
+  `Jwt__SigningKey` (>=32 bytes). `ASPNETCORE_ENVIRONMENT=Production` ya va en el blueprint.
+- Deploy: Render → New → Blueprint → conecta el repo → aplica → carga los secretos.
+Las apps cliente apuntan a la URL pública de Render (`API_BASE_URL` en Flutter,
+`environment.apiBaseUrl`/proxy en Angular).
 
 ## App móvil del miembro (Fase 4)
 Flutter 3.44 (Material 3), en `clients/mobile`. Estado: `AuthService` (ChangeNotifier) con

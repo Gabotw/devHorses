@@ -12,9 +12,15 @@ using GymFlow.Infrastructure.Jobs;
 using GymFlow.Infrastructure.Persistence;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Render (y otros PaaS) inyectan el puerto por la variable PORT. Kestrel escucha ahí.
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(port))
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // --- Capas ---
 builder.Services.AddApplication();
@@ -77,6 +83,23 @@ builder.Services.AddControllers(options =>
 });
 builder.Services.AddOpenApi();
 
+// --- CORS para las apps cliente (web/móvil) ---
+// Con Cors:AllowedOrigins definido, se restringe a esos orígenes (y se permiten credenciales
+// para SignalR). Sin él, se permite cualquier origen (JWT por header/query, sin cookies).
+const string CorsPolicy = "gymflow-clients";
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(CorsPolicy, policy =>
+    {
+        policy.AllowAnyHeader().AllowAnyMethod();
+        if (allowedOrigins.Length > 0)
+            policy.WithOrigins(allowedOrigins).AllowCredentials();
+        else
+            policy.AllowAnyOrigin();
+    });
+});
+
 // --- Tiempo real: aforo por SignalR (adaptador del puerto IOccupancyNotifier) ---
 var signalR = builder.Services.AddSignalR();
 
@@ -93,9 +116,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    // Detrás del proxy de Render la TLS termina fuera del contenedor; redirigir a HTTPS
+    // dentro solo causaría bucles. Solo se fuerza HTTPS en local.
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
+app.UseCors(CorsPolicy);
 
 app.UseAuthentication();
 // El tenant se resuelve DESPUÉS de autenticar: request autenticada usa el claim,
@@ -119,12 +145,17 @@ app.Services.GetRequiredService<IRecurringJobManager>().AddOrUpdate<OverdueSweep
     job => job.RunAsync(),
     Cron.Daily(3));
 
-// Seed del tenant de validación en Development.
-if (app.Environment.IsDevelopment())
+// Migración al arrancar (en todos los entornos) y seed opcional. En Development siempre
+// siembra; en producción solo si Seed:Enabled=true (útil para poblar el tenant demo una vez).
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
-    var seeder = scope.ServiceProvider.GetRequiredService<AppDbSeeder>();
-    await seeder.SeedAsync();
+    var sp = scope.ServiceProvider;
+    await sp.GetRequiredService<AppDbContext>().Database.MigrateAsync();
+
+    var seedEnabled = app.Environment.IsDevelopment()
+        || app.Configuration.GetValue<bool>("Seed:Enabled");
+    if (seedEnabled)
+        await sp.GetRequiredService<AppDbSeeder>().SeedAsync();
 }
 
 app.Run();

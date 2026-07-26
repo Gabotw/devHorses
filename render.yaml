@@ -1,0 +1,24 @@
+# Blueprint de Render para el backend GymFlow (Docker).
+# Deploy: Render Dashboard → New → Blueprint → conecta el repo → aplica.
+# Los secretos (sync:false) se cargan en el dashboard, nunca en el repo.
+services:
+  - type: web
+    name: gymflow-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: ohio            # cerca de Neon us-east-2
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      # Cadena de conexión a Neon (formato .NET/Npgsql). Se define en el dashboard.
+      - key: ConnectionStrings__Default
+        sync: false
+      # Clave de firma del JWT (cadena larga y aleatoria, >= 32 bytes). En el dashboard.
+      - key: Jwt__SigningKey
+        sync: false
+      # Sembrar el tenant/miembro demo la primera vez (ponlo en "true" una vez y luego "false").
+      - key: Seed__Enabled
+        value: "false"

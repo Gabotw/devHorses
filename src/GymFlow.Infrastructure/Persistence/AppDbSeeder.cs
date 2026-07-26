@@ -24,8 +24,7 @@ public sealed class AppDbSeeder(
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        await db.Database.MigrateAsync(cancellationToken);
-
+        // La migración se aplica en el arranque (Program), antes de sembrar.
         var tenant = await db.Tenants
             .FirstOrDefaultAsync(t => t.Subdomain == Subdomain, cancellationToken);
 

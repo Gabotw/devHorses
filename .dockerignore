@@ -1,0 +1,14 @@
+# Contexto de build mínimo: solo el backend .NET.
+**/bin/
+**/obj/
+**/.vs/
+.git/
+.github/
+.vscode/
+clients/
+tests/
+docs/
+*.md
+.dockerignore
+Dockerfile
+render.yaml
