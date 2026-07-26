@@ -18,6 +18,9 @@ public sealed class AppDbSeeder(
 {
     private const string Subdomain = "demo";
     private const string OwnerEmail = "owner@demo.gymflow.pe";
+    private const string MemberDocument = "12345678";
+    private const string MemberPassword = "Miembro123!";
+    private const string DemoPlanName = "Mensual";
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
@@ -51,6 +54,50 @@ public sealed class AppDbSeeder(
             db.StaffUsers.Add(owner);
             await db.SaveChangesAsync(cancellationToken);
             logger.LogInformation("Seed: owner '{Email}' creado para tenant {TenantId}.", OwnerEmail, tenant.Id);
+        }
+
+        await SeedDemoMemberAsync(tenant.Id, cancellationToken);
+    }
+
+    /// <summary>
+    /// Miembro de prueba con acceso a la app (contraseña) y una membresía activa, para
+    /// probar la app móvil de punta a punta en Development. Idempotente.
+    /// </summary>
+    private async Task SeedDemoMemberAsync(Guid tenantId, CancellationToken cancellationToken)
+    {
+        var plan = await db.MembershipPlans
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(p => p.TenantId == tenantId && p.Name == DemoPlanName, cancellationToken);
+
+        if (plan is null)
+        {
+            plan = new MembershipPlan(tenantId, DemoPlanName, 100m, 30);
+            db.MembershipPlans.Add(plan);
+            await db.SaveChangesAsync(cancellationToken);
+        }
+
+        var member = await db.Members
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(m => m.TenantId == tenantId && m.DocumentId == MemberDocument, cancellationToken);
+
+        if (member is null)
+        {
+            member = new Member(tenantId, "Juan Pérez", MemberDocument, phone: "999888777");
+            member.SetPasswordHash(passwordHasher.Hash(MemberPassword));
+            db.Members.Add(member);
+            await db.SaveChangesAsync(cancellationToken);
+            logger.LogInformation("Seed: miembro demo '{Doc}' creado (password {Pass}).", MemberDocument, MemberPassword);
+        }
+
+        var hasMembership = await db.Memberships
+            .IgnoreQueryFilters()
+            .AnyAsync(m => m.MemberId == member.Id, cancellationToken);
+
+        if (!hasMembership)
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            db.Memberships.Add(new Membership(tenantId, member, plan, today));
+            await db.SaveChangesAsync(cancellationToken);
         }
     }
 }

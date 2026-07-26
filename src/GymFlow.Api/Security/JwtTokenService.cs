@@ -18,18 +18,35 @@ public sealed class JwtTokenService(IOptions<JwtSettings> options) : IJwtTokenSe
 
     public AccessToken Issue(StaffUser user)
     {
-        var expiresAt = DateTime.UtcNow.AddMinutes(_settings.AccessTokenMinutes);
-
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(GymFlowClaims.TenantId, user.TenantId.ToString()),
+            new(GymFlowClaims.ActorType, GymFlowClaims.ActorStaff),
             new(ClaimTypes.Role, user.Role.ToString()),
             new(JwtRegisteredClaimNames.Name, user.FullName),
             new(JwtRegisteredClaimNames.Email, user.Email),
         };
+        return Build(claims);
+    }
 
+    public AccessToken IssueForMember(Member member)
+    {
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, member.Id.ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(GymFlowClaims.TenantId, member.TenantId.ToString()),
+            new(GymFlowClaims.ActorType, GymFlowClaims.ActorMember),
+            new(JwtRegisteredClaimNames.Name, member.FullName),
+        };
+        return Build(claims);
+    }
+
+    private AccessToken Build(IEnumerable<Claim> claims)
+    {
+        var expiresAt = DateTime.UtcNow.AddMinutes(_settings.AccessTokenMinutes);
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SigningKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

@@ -68,6 +68,7 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(Policies.Manager, p => p.RequireRole(Policies.ManagerRoles));
     options.AddPolicy(Policies.Staff, p => p.RequireRole(Policies.StaffRoles));
+    options.AddPolicy(Policies.Member, p => p.RequireClaim(GymFlowClaims.ActorType, GymFlowClaims.ActorMember));
 });
 
 builder.Services.AddControllers(options =>

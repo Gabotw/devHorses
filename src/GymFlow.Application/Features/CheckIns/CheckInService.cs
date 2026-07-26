@@ -62,6 +62,21 @@ public sealed class CheckInService(
             .ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<CheckInDto>> ListByMemberAsync(
+        Guid memberId, int take = 50, CancellationToken ct = default)
+    {
+        take = take is < 1 or > 200 ? 50 : take;
+
+        return await db.CheckIns.AsNoTracking()
+            .Where(c => c.MemberId == memberId)
+            .OrderByDescending(c => c.OccurredAtUtc)
+            .Take(take)
+            .Join(db.Members, c => c.MemberId, m => m.Id,
+                (c, m) => new CheckInDto(
+                    c.Id, c.MemberId, m.FullName, c.Method, c.OccurredAtUtc, c.IsValid, c.Reason))
+            .ToListAsync(ct);
+    }
+
     public async Task<int> GetOccupancyAsync(CancellationToken ct = default)
     {
         var tenantId = tenant.GetRequiredTenantId();

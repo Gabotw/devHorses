@@ -9,6 +9,9 @@ namespace GymFlow.Application.Abstractions.Security;
 public interface IJwtTokenService
 {
     AccessToken Issue(StaffUser user);
+
+    /// <summary>Emite un token para un miembro (app móvil). Lleva sub=memberId, tenant_id y actor=member.</summary>
+    AccessToken IssueForMember(Member member);
 }
 
 /// <summary>Token emitido y su expiración (UTC).</summary>

@@ -48,8 +48,9 @@ dotnet ef database update      --project src/GymFlow.Infrastructure --startup-pr
 `appsettings.Development.json` trae una connection string a Postgres local y una
 `Jwt:SigningKey` SOLO para desarrollo. Para apuntar a Neon, sobrescribe
 `ConnectionStrings:Default` (idealmente vía user-secrets o variable de entorno, no en el repo).
-El seed (`AppDbSeeder`) crea el tenant `demo` y un owner `owner@demo.gymflow.pe`
-(password inicial `Cambiar123!`) al arrancar en Development.
+El seed (`AppDbSeeder`) crea el tenant `demo`, un owner `owner@demo.gymflow.pe`
+(password `Cambiar123!`) y un **miembro demo** con acceso a la app: documento `12345678`,
+password `Miembro123!`, con un plan `Mensual` y una membresía activa. Todo en Development.
 
 ## Frontend (clients/web)
 Angular 22 (standalone + signals) + PrimeNG (tema Aura). Dev server con proxy
@@ -75,10 +76,10 @@ npm run build
   membresía vigente (ingresos no válidos se guardan como traza), aforo en tiempo real
   por SignalR (`/hubs/occupancy`, backplane Redis opcional) y asistencia del día.
   Panel: página Check-in (buscar miembro, registrar, aforo en vivo, asistencia).
-- 🚧 **Fase 4** — App móvil Flutter: app scaffoldeada (`clients/mobile`) con login del
-  miembro (DNI + contraseña + gimnasio), Mi plan, Check-in e Historial (asistencia/pagos).
-  **Falta el backend del miembro** (ver abajo) para que consuma datos reales.
-- ⏭️ **Fase 5** — Reportes & Dashboard: ingresos, morosidad, churn, ocupación por hora.
+- ✅ **Fase 4** — App móvil Flutter + backend del miembro: app (`clients/mobile`) con login
+  del miembro (DNI + contraseña + gimnasio), Mi plan, Check-in e Historial (asistencia/pagos),
+  consumiendo la API `/member-auth` + `/me/*` (ya implementada, ver abajo).
+- ⏭️ **Fase 5** — Reportes & Dashboard (siguiente): ingresos, morosidad, churn, ocupación por hora.
 - Deploy Railway/Neon: pendiente de credenciales.
 
 ## App móvil del miembro (Fase 4)
@@ -91,14 +92,16 @@ flutter run              # requiere Android SDK (Android Studio) para dispositiv
 flutter run -d chrome    # web, para probar sin Android
 flutter analyze && flutter test && flutter build web
 ```
-**Backend del miembro — PENDIENTE (prerequisito para datos reales).** La app espera:
+**Backend del miembro (implementado).** El `Member` puede tener `PasswordHash` (acceso a la
+app); el staff lo asigna con `POST /api/members/{id}/set-password` (policy Manager). Endpoints:
 - `POST /api/member-auth/login` (header `X-Tenant-Subdomain`, body `{documentId, password}`)
-  → `{accessToken, expiresAtUtc, memberId, fullName}`. Requiere dar credenciales al `Member`
-  (hoy no tiene password) — reusar `IPasswordHasher`; emitir JWT con `tenant_id` + `sub`.
-- `GET /api/me/membership` → membresía vigente del miembro autenticado (o 204).
+  → `{accessToken, expiresAtUtc, memberId, fullName}`. Emite un JWT con `sub`=memberId,
+  `tenant_id` y `actor=member`. Solo entran miembros activos y con contraseña.
+- `GET /api/me/membership` → membresía del miembro con nombre de plan (o 204).
 - `GET /api/me/checkins`, `GET /api/me/payments` → historial del propio miembro.
-- `POST /api/me/checkins` → auto check-in (método `App`), reusa la lógica de `CheckInService`.
-El tenant sale del JWT; los endpoints `/me/*` deben acotar por `sub` (memberId), no por staff.
+- `POST /api/me/checkins` → auto check-in (método `App`), reusa `CheckInService`.
+Autorización: policy `Member` exige el claim `actor=member`; los tokens de staff (con `role`)
+no acceden a `/me/*` y viceversa. El memberId sale del claim `sub`, nunca del cliente.
 
 ## Check-in & aforo (Fase 3)
 - `CheckIn` (ITenantScoped) guarda `OccurredAtUtc` + `LocalDate` (día en zona del tenant)

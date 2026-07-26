@@ -1,6 +1,8 @@
 using GymFlow.Application.Features.Auth;
 using GymFlow.Application.Features.CheckIns;
 using GymFlow.Application.Features.Maintenance;
+using GymFlow.Application.Features.Me;
+using GymFlow.Application.Features.MemberAuth;
 using GymFlow.Application.Features.Members;
 using GymFlow.Application.Features.Memberships;
 using GymFlow.Application.Features.Payments;
@@ -20,6 +22,8 @@ public static class DependencyInjection
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IOverdueSweepService, OverdueSweepService>();
         services.AddScoped<ICheckInService, CheckInService>();
+        services.AddScoped<IMemberAuthService, MemberAuthService>();
+        services.AddScoped<IMeService, MeService>();
         return services;
     }
 }
