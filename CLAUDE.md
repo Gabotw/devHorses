@@ -12,7 +12,7 @@ Hexagonal), panel Angular, app Flutter. Postgres (Neon) + Redis. Ver PROJECT.md 
 src/
 ├── GymFlow.Domain/          → Entidades, VOs, reglas puras. SIN dependencias externas.
 ├── GymFlow.Application/      → Casos de uso, DTOs, PUERTOS (interfaces).
-├── GymFlow.Infrastructure/   → ADAPTADORES: EF Core, seguridad, (pagos/Hangfire/Redis futuros).
+├── GymFlow.Infrastructure/   → ADAPTADORES: EF Core, seguridad, pagos (Culqi), Hangfire, (Redis futuro).
 ├── GymFlow.Api/              → Controllers, middleware de tenant, JWT, DI.
 clients/
 ├── web/    (Angular + PrimeNG) → Panel admin/recepción (login, miembros, planes).
@@ -68,5 +68,20 @@ npm run build
 - ✅ **Fase 0** — Fundaciones: 4 capas, multi-tenancy, JWT + RBAC, seed, migración inicial, CI.
 - ✅ **Fase 1** — Miembros & Membresías: CRUD miembros/planes, membresías con estados
   (activa/congelada/vencida), panel Angular (login, miembros, planes).
-- ⏭️ **Fase 2** — Pagos (siguiente): pago manual, IPaymentGateway/Culqi, morosidad, Hangfire.
+- ✅ **Fase 2** — Pagos: registro de pago manual (efectivo), `IPaymentGateway` + adaptador
+  Culqi, morosidad (`MembershipStatus.Overdue`) y job diario Hangfire (`overdue-sweep`).
+  Panel: registrar pago e historial en el diálogo de membresías.
+- ⏭️ **Fase 3** — Check-in & Asistencia (siguiente): recepción valida membresía activa,
+  aforo en tiempo real (Redis + SignalR), registro de asistencia.
 - Deploy Railway/Neon: pendiente de credenciales.
+
+## Pagos (Fase 2)
+- Pasarela **siempre** detrás de `IPaymentGateway` (Application); el único adaptador que
+  conoce Culqi es `CulqiPaymentGateway` (Infrastructure), sobre la API REST v2.
+- La llave `Culqi:SecretKey` NO va al repo: user-secrets / variable de entorno. Sin llave,
+  el cobro por pasarela se rechaza limpiamente; el pago en efectivo no la necesita.
+- **Morosidad**: job diario `overdue-sweep` (Hangfire, 03:00) marca morosas las membresías
+  activas vencidas. Corre sin tenant resuelto → itera tenants e ignora el filtro global.
+  Hangfire usa Postgres como almacenamiento; dashboard en `/hangfire` solo en Development.
+- Migraciones EF: hay una `DesignTimeDbContextFactory` para que el tooling no arranque el
+  host completo (Hangfire/seed); acepta `ConnectionStrings__Default` por variable de entorno.

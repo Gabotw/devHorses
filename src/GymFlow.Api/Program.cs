@@ -6,7 +6,9 @@ using GymFlow.Application;
 using GymFlow.Application.Abstractions.Security;
 using GymFlow.Application.Abstractions.Tenancy;
 using GymFlow.Infrastructure;
+using GymFlow.Infrastructure.Jobs;
 using GymFlow.Infrastructure.Persistence;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -15,6 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 // --- Capas ---
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddBackgroundJobs(builder.Configuration);
 
 // --- Multi-tenancy: provider scoped por request ---
 builder.Services.AddScoped<ITenantProvider, TenantProvider>();
@@ -72,6 +75,18 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+
+// Dashboard de Hangfire solo en Development (por defecto solo acepta peticiones locales).
+if (app.Environment.IsDevelopment())
+{
+    app.UseHangfireDashboard("/hangfire");
+}
+
+// Corte de morosidad diario (03:00). Marca morosas las membresías vencidas sin renovar.
+app.Services.GetRequiredService<IRecurringJobManager>().AddOrUpdate<OverdueSweepJob>(
+    OverdueSweepJob.RecurringJobId,
+    job => job.RunAsync(),
+    Cron.Daily(3));
 
 // Seed del tenant de validación en Development.
 if (app.Environment.IsDevelopment())

@@ -88,6 +88,29 @@ public class MembershipTests
     }
 
     [Fact]
+    public void MarkOverdue_ActivaVencida_PasaAMorosa()
+    {
+        var (member, plan) = NewMemberAndPlan(durationDays: 30);
+        var m = new Membership(TenantId, member, plan, new DateOnly(2026, 1, 1));
+
+        m.MarkOverdue();
+
+        Assert.Equal(MembershipStatus.Overdue, m.Status);
+    }
+
+    [Fact]
+    public void MarkOverdue_NoActiva_NoCambia()
+    {
+        var (member, plan) = NewMemberAndPlan(durationDays: 30);
+        var m = new Membership(TenantId, member, plan, new DateOnly(2026, 1, 1));
+        m.Freeze(new DateOnly(2026, 1, 10), new DateOnly(2026, 1, 20));
+
+        m.MarkOverdue();
+
+        Assert.Equal(MembershipStatus.Frozen, m.Status);
+    }
+
+    [Fact]
     public void IsActiveOn_DentroDelPeriodo_EsVerdadero()
     {
         var (member, plan) = NewMemberAndPlan(durationDays: 30);

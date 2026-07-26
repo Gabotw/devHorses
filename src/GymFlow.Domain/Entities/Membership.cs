@@ -106,6 +106,18 @@ public class Membership : Entity, ITenantScoped
     }
 
     /// <summary>
+    /// Corte de morosidad (Fase 2): una membresía activa cuyo fin ya pasó y no fue
+    /// renovada pasa a morosa. No toca congeladas ni ya vencidas/morosas.
+    /// </summary>
+    public void MarkOverdue()
+    {
+        if (Status != MembershipStatus.Active)
+            return;
+        Status = MembershipStatus.Overdue;
+        Touch();
+    }
+
+    /// <summary>
     /// Recalcula el estado respecto a una fecha (típicamente hoy en la zona del tenant):
     /// una membresía activa cuyo fin ya pasó se marca vencida. No toca las congeladas.
     /// </summary>
