@@ -9,17 +9,31 @@ public sealed class SystemClock : IClock
 
     public DateOnly TodayIn(string timeZoneId)
     {
-        TimeZoneInfo tz;
+        var local = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Resolve(timeZoneId));
+        return DateOnly.FromDateTime(local);
+    }
+
+    public DateTime ToLocalTime(DateTime utc, string timeZoneId)
+    {
+        var utcKind = DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+        return TimeZoneInfo.ConvertTimeFromUtc(utcKind, Resolve(timeZoneId));
+    }
+
+    public DateTime StartOfDayUtc(DateOnly localDate, string timeZoneId)
+    {
+        var localMidnight = localDate.ToDateTime(TimeOnly.MinValue); // DateTimeKind.Unspecified
+        return TimeZoneInfo.ConvertTimeToUtc(localMidnight, Resolve(timeZoneId));
+    }
+
+    private static TimeZoneInfo Resolve(string timeZoneId)
+    {
         try
         {
-            tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
         }
         catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
         {
-            tz = TimeZoneInfo.Utc;
+            return TimeZoneInfo.Utc;
         }
-
-        var local = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
-        return DateOnly.FromDateTime(local);
     }
 }

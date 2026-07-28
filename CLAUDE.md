@@ -80,7 +80,11 @@ npm run build
 - ✅ **Fase 4** — App móvil Flutter + backend del miembro: app (`clients/mobile`) con login
   del miembro (DNI + contraseña + gimnasio), Mi plan, Check-in e Historial (asistencia/pagos),
   consumiendo la API `/member-auth` + `/me/*` (ya implementada, ver abajo).
-- ⏭️ **Fase 5** — Reportes & Dashboard (siguiente): ingresos, morosidad, churn, ocupación por hora.
+- ✅ **Fase 5** — Reportes & Dashboard: endpoint `GET /api/reports/dashboard` (policy Manager)
+  con ingresos por día/medio, morosidad (monto en riesgo), retención/churn, miembros y
+  ocupación por hora. Panel Angular: página **Dashboard** (KPIs, gráficas de barras CSS,
+  selector de rango), visible solo para owner/admin.
+- ⏭️ **Fase 6** — Billing del SaaS (siguiente): suscripción de tenants a la plataforma (solo con tracción).
 - **Deploy**: DB en **Neon** (conectada vía user-secrets/env). Backend dockerizado para
   **Render** (`Dockerfile` + `render.yaml`); ver sección "Deploy (Render)".
 
@@ -119,6 +123,19 @@ app); el staff lo asigna con `POST /api/members/{id}/set-password` (policy Manag
 - `POST /api/me/checkins` → auto check-in (método `App`), reusa `CheckInService`.
 Autorización: policy `Member` exige el claim `actor=member`; los tokens de staff (con `role`)
 no acceden a `/me/*` y viceversa. El memberId sale del claim `sub`, nunca del cliente.
+
+## Reportes & Dashboard (Fase 5)
+- `ReportService` (Application) arma el dashboard del tenant en un solo `GET /api/reports/dashboard`
+  (policy **Manager**; la recepción no ve ingresos ni churn). Acepta `from`/`to` (fechas locales
+  yyyy-MM-dd); sin ellas cubre los últimos 30 días terminando hoy (tope 366 días).
+- Todo se calcula en la zona del tenant: `IClock` ganó `ToLocalTime` y `StartOfDayUtc` para
+  agrupar por día/hora. Los timestamps UTC se traen acotados por rango y se agrupan en memoria
+  (volumen chico); los conteos de estado/morosidad salen directo de la DB. Dinero siempre decimal.
+- Devuelve KPIs (ingresos, ticket promedio, morosidad + monto en riesgo, miembros activos/nuevos,
+  retención/churn) + series: ingresos por día (con ceros), ingresos por medio, membresías por
+  estado y ocupación por hora (0–23).
+- Front: página **Dashboard** (`clients/web`, ruta `/dashboard`, solo owner/admin) con KPIs,
+  gráficas de barras en CSS (sin dependencias de charting) y selector de rango (`p-datepicker`).
 
 ## Check-in & aforo (Fase 3)
 - `CheckIn` (ITenantScoped) guarda `OccurredAtUtc` + `LocalDate` (día en zona del tenant)
