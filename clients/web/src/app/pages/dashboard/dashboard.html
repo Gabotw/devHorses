@@ -1,0 +1,113 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h2>Dashboard</h2>
+      <p class="subtitle">Ingresos, morosidad, retención y ocupación del gimnasio.</p>
+    </div>
+
+    <div class="range-picker">
+      <p-datepicker
+        [(ngModel)]="range"
+        selectionMode="range"
+        [readonlyInput]="true"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        placeholder="Rango de fechas"
+      />
+      <p-button
+        label="Actualizar"
+        icon="pi pi-refresh"
+        [loading]="loading()"
+        (onClick)="load()"
+      />
+    </div>
+  </div>
+
+  @if (data(); as d) {
+    <section class="kpis">
+      <div class="kpi">
+        <span class="kpi-label">Ingresos del período</span>
+        <span class="kpi-value">S/ {{ d.revenueTotal | number: '1.2-2' }}</span>
+        <span class="kpi-foot">{{ d.paymentsCount }} pagos · ticket S/ {{ d.averageTicket | number: '1.2-2' }}</span>
+      </div>
+
+      <div class="kpi" [class.alert]="d.overdueMemberships > 0">
+        <span class="kpi-label">Morosidad</span>
+        <span class="kpi-value">{{ d.overdueMemberships }}</span>
+        <span class="kpi-foot">S/ {{ d.overdueAmount | number: '1.2-2' }} en riesgo</span>
+      </div>
+
+      <div class="kpi">
+        <span class="kpi-label">Miembros activos</span>
+        <span class="kpi-value">{{ d.activeMembers }}</span>
+        <span class="kpi-foot">de {{ d.totalMembers }} · {{ d.newMembers }} nuevos</span>
+      </div>
+
+      <div class="kpi">
+        <span class="kpi-label">Retención</span>
+        <span class="kpi-value">{{ d.retentionRate | percent: '1.0-1' }}</span>
+        <span class="kpi-foot">churn {{ d.churnRate | percent: '1.0-1' }} · {{ d.activeMemberships }} membresías activas</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h3>Ingresos por día</h3>
+        <small>{{ d.range.from | date: 'dd MMM' }} — {{ d.range.to | date: 'dd MMM' }}</small>
+      </div>
+      @if (d.revenueTotal > 0) {
+        <div class="bars revenue">
+          @for (p of d.revenueByDay; track p.date) {
+            <div class="bar-col" [title]="(p.date | date: 'dd MMM') + ': S/ ' + (p.amount | number: '1.2-2')">
+              <div class="bar" [style.height.%]="barHeight(p.amount, maxRevenue())"></div>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="empty">Sin ingresos registrados en el período.</p>
+      }
+    </section>
+
+    <div class="two-col">
+      <section class="panel">
+        <div class="panel-head"><h3>Ocupación por hora</h3></div>
+        <div class="bars occupancy">
+          @for (h of d.occupancyByHour; track h.hour) {
+            <div class="bar-col" [title]="h.hour + ':00 — ' + h.count + ' ingresos'">
+              <div class="bar" [style.height.%]="barHeight(h.count, maxOccupancy())"></div>
+              <span class="bar-x">{{ h.hour }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h3>Membresías por estado</h3></div>
+        <ul class="stat-list">
+          @for (s of d.membershipsByStatus; track s.status) {
+            <li>
+              <span>{{ statusLabel[s.status] }}</span>
+              <strong>{{ s.count }}</strong>
+            </li>
+          } @empty {
+            <li class="empty-row">Sin membresías.</li>
+          }
+        </ul>
+
+        <div class="panel-head sep"><h3>Ingresos por medio</h3></div>
+        <ul class="stat-list">
+          @for (m of d.revenueByMethod; track m.method) {
+            <li>
+              <span>{{ methodLabel[m.method] }} <small>({{ m.count }})</small></span>
+              <strong>S/ {{ m.amount | number: '1.2-2' }}</strong>
+            </li>
+          } @empty {
+            <li class="empty-row">Sin cobros en el período.</li>
+          }
+        </ul>
+      </section>
+    </div>
+  } @else if (!loading()) {
+    <p class="empty">No hay datos para mostrar.</p>
+  }
+</div>

@@ -83,6 +83,53 @@ export interface PagedResult<T> {
   totalPages: number;
 }
 
+// Reportes / dashboard (Fase 5). Reflejan los DTOs de ReportService.
+export interface ReportRange {
+  from: string; // yyyy-MM-dd
+  to: string;
+}
+
+export interface RevenuePoint {
+  date: string;
+  amount: number;
+  count: number;
+}
+
+export interface RevenueByMethod {
+  method: PaymentMethod;
+  amount: number;
+  count: number;
+}
+
+export interface MembershipStatusCount {
+  status: MembershipStatus;
+  count: number;
+}
+
+export interface OccupancyByHour {
+  hour: number;
+  count: number;
+}
+
+export interface Dashboard {
+  range: ReportRange;
+  revenueTotal: number;
+  paymentsCount: number;
+  averageTicket: number;
+  overdueMemberships: number;
+  overdueAmount: number;
+  totalMembers: number;
+  activeMembers: number;
+  newMembers: number;
+  activeMemberships: number;
+  churnRate: number;
+  retentionRate: number;
+  revenueByDay: RevenuePoint[];
+  revenueByMethod: RevenueByMethod[];
+  membershipsByStatus: MembershipStatusCount[];
+  occupancyByHour: OccupancyByHour[];
+}
+
 // Indexables por number para usarlos cómodamente desde plantillas.
 export const MEMBER_STATUS_LABEL: Record<number, string> = {
   1: 'Activo',

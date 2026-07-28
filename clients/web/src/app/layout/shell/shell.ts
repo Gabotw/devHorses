@@ -15,6 +15,11 @@ import { AuthService } from '../../core/auth.service';
       </div>
 
       <nav class="nav">
+        @if (auth.isManager()) {
+          <a routerLink="/dashboard" routerLinkActive="active">
+            <i class="pi pi-chart-bar"></i> Dashboard
+          </a>
+        }
         <a routerLink="/checkin" routerLinkActive="active">
           <i class="pi pi-sign-in"></i> Check-in
         </a>

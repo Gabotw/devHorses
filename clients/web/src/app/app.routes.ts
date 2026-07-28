@@ -17,6 +17,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/checkin/checkin').then((m) => m.CheckInPage),
       },
       {
+        path: 'dashboard',
+        loadComponent: () => import('./pages/dashboard/dashboard').then((m) => m.DashboardPage),
+      },
+      {
         path: 'members',
         loadComponent: () => import('./pages/members/members-list').then((m) => m.MembersList),
       },
