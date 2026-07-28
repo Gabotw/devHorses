@@ -87,7 +87,9 @@ npm run build
 - ✅ **Fase 6** — Billing del SaaS: capa de plataforma (super-admin `actor=platform`) con
   catálogo de planes, suscripción por tenant (estado/período) y corte de morosidad SaaS
   (job `saas-billing-sweep`). API `/api/platform/*` (backend; consola web pendiente).
-- ⏭️ **Fase 7** — Clases (post-MVP): horarios, cupos, reservas, waitlist.
+- ✅ **Fase 7** — Clases (post-MVP): sesiones con cupo, reservas con lista de espera
+  (promoción FIFO al liberarse un cupo) y asistencia. API staff `/api/classes/*` + miembro
+  `/api/me/classes*` y `/api/me/reservations`. Panel: página **Clases**; app: tab **Clases**.
 - **Deploy**: DB en **Neon** (conectada vía user-secrets/env). Backend dockerizado para
   **Render** (`Dockerfile` + `render.yaml`); ver sección "Deploy (Render)".
 
@@ -139,6 +141,22 @@ no acceden a `/me/*` y viceversa. El memberId sale del claim `sub`, nunca del cl
   estado y ocupación por hora (0–23).
 - Front: página **Dashboard** (`clients/web`, ruta `/dashboard`, solo owner/admin) con KPIs,
   gráficas de barras en CSS (sin dependencias de charting) y selector de rango (`p-datepicker`).
+
+## Clases & reservas (Fase 7)
+- Tenant-scoped. `ClassSession` (ITenantScoped) guarda `StartsAtUtc` + `LocalDate` (día en la
+  zona del tenant, como `CheckIn`), `Capacity` y estado (Scheduled/Cancelled). `ClassReservation`
+  (ITenantScoped) enlaza sesión↔miembro con estado (Booked/Waitlisted/Cancelled/Attended).
+- **Cupos y waitlist**: al reservar, si `Booked < Capacity` → Booked; si no → Waitlisted. Al
+  cancelar una reserva con cupo, se promueve (FIFO por `CreatedAtUtc`) a la primera en espera.
+  Índice único parcial `(ClassSessionId, MemberId) WHERE Status IN (1,2)`: un miembro no puede
+  tener dos reservas activas en la misma sesión (tras cancelar sí puede volver a reservar).
+  Reservar exige membresía vigente en la fecha de la clase (misma regla que el check-in).
+- **API staff** (policy Staff): `GET/POST /api/classes`, `POST /api/classes/{id}/cancel`
+  (libera las reservas), `GET /api/classes/{id}/roster`, `POST /api/classes/{id}/attendance/{memberId}`.
+- **API miembro** (policy Member, `/me`): `GET /me/classes` (próximas con mi estado),
+  `POST /me/classes/{id}/reserve`, `POST /me/classes/{id}/cancel`, `GET /me/reservations`.
+- Front: panel Angular página **Clases** (crear, agenda con ocupación, roster, asistencia,
+  cancelar); app Flutter tab **Clases** (reservar / lista de espera / cancelar, pull-to-refresh).
 
 ## Billing del SaaS (Fase 6)
 - Capa de **plataforma** (cross-tenant), separada del panel del gimnasio. Entidades sin

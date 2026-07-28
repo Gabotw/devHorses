@@ -34,6 +34,28 @@ public sealed class MeController(IMeService me) : ControllerBase
     public async Task<IActionResult> SelfCheckIn(CancellationToken ct)
         => Ok(await me.SelfCheckInAsync(MemberId, ct));
 
+    // --- Clases (Fase 7) ---
+
+    /// <summary>Próximas clases con cupo disponible y el estado de reserva del propio miembro.</summary>
+    [HttpGet("classes")]
+    public async Task<IActionResult> UpcomingClasses(CancellationToken ct)
+        => Ok(await me.GetUpcomingClassesAsync(MemberId, ct));
+
+    /// <summary>Reserva una clase. Si está llena, entra a lista de espera.</summary>
+    [HttpPost("classes/{sessionId:guid}/reserve")]
+    public async Task<IActionResult> Reserve(Guid sessionId, CancellationToken ct)
+        => Ok(await me.ReserveClassAsync(MemberId, sessionId, ct));
+
+    /// <summary>Cancela la reserva del miembro (promueve al primero en espera si tenía cupo).</summary>
+    [HttpPost("classes/{sessionId:guid}/cancel")]
+    public async Task<IActionResult> CancelReservation(Guid sessionId, CancellationToken ct)
+        => Ok(await me.CancelClassReservationAsync(MemberId, sessionId, ct));
+
+    /// <summary>Reservas del miembro (agenda/historial).</summary>
+    [HttpGet("reservations")]
+    public async Task<IActionResult> MyReservations(CancellationToken ct)
+        => Ok(await me.GetMyReservationsAsync(MemberId, ct));
+
     /// <summary>MemberId del token. `sub` se mapea a NameIdentifier por el handler JWT.</summary>
     private Guid MemberId
     {

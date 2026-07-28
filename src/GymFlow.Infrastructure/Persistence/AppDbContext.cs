@@ -38,6 +38,10 @@ public sealed class AppDbContext(
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<PlatformAdmin> PlatformAdmins => Set<PlatformAdmin>();
 
+    // Clases & reservas (Fase 7) — tenant-scoped (llevan global query filter, ver más abajo).
+    public DbSet<ClassSession> ClassSessions => Set<ClassSession>();
+    public DbSet<ClassReservation> ClassReservations => Set<ClassReservation>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -52,6 +56,8 @@ public sealed class AppDbContext(
         modelBuilder.Entity<Membership>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<Payment>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<CheckIn>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<ClassSession>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<ClassReservation>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
     }
 
     public override int SaveChanges()

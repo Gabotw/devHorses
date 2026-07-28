@@ -1,4 +1,5 @@
 using GymFlow.Application.Features.Auth;
+using GymFlow.Application.Features.Classes;
 using GymFlow.Application.Features.CheckIns;
 using GymFlow.Application.Features.Maintenance;
 using GymFlow.Application.Features.Me;
@@ -27,6 +28,7 @@ public static class DependencyInjection
         services.AddScoped<IMemberAuthService, MemberAuthService>();
         services.AddScoped<IMeService, MeService>();
         services.AddScoped<IReportService, ReportService>();
+        services.AddScoped<IClassService, ClassService>();
 
         // Billing del SaaS (Fase 6) — nivel plataforma.
         services.AddScoped<IPlatformAuthService, PlatformAuthService>();

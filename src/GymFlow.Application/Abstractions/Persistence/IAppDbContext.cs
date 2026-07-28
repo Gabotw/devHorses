@@ -23,5 +23,9 @@ public interface IAppDbContext
     DbSet<Subscription> Subscriptions { get; }
     DbSet<PlatformAdmin> PlatformAdmins { get; }
 
+    // Clases & reservas (Fase 7) — tenant-scoped.
+    DbSet<ClassSession> ClassSessions { get; }
+    DbSet<ClassReservation> ClassReservations { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
