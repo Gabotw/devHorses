@@ -110,6 +110,63 @@ enum PaymentMethodLabel {
       PaymentMethodLabel.values.firstWhere((m) => m.code == code, orElse: () => PaymentMethodLabel.unknown);
 }
 
+/// Estado de la reserva del miembro (coincide con ClassReservationStatus del backend).
+enum ReservationStatus {
+  booked(1, 'Con cupo'),
+  waitlisted(2, 'En espera'),
+  cancelled(3, 'Cancelada'),
+  attended(4, 'Asistió'),
+  none(0, '');
+
+  const ReservationStatus(this.code, this.label);
+  final int code;
+  final String label;
+
+  static ReservationStatus fromCode(int? code) =>
+      ReservationStatus.values.firstWhere((s) => s.code == code, orElse: () => ReservationStatus.none);
+}
+
+/// Sesión de clase vista por el miembro: ocupación + su propio estado de reserva.
+class MemberClass {
+  const MemberClass({
+    required this.id,
+    required this.name,
+    required this.instructorName,
+    required this.startsAt,
+    required this.durationMinutes,
+    required this.capacity,
+    required this.bookedCount,
+    required this.availableSpots,
+    required this.myStatus,
+  });
+
+  final String id;
+  final String name;
+  final String? instructorName;
+  final DateTime startsAt;
+  final int durationMinutes;
+  final int capacity;
+  final int bookedCount;
+  final int availableSpots;
+  final ReservationStatus myStatus;
+
+  bool get isReserved =>
+      myStatus == ReservationStatus.booked || myStatus == ReservationStatus.waitlisted;
+  bool get isFull => availableSpots <= 0;
+
+  factory MemberClass.fromJson(Map<String, dynamic> json) => MemberClass(
+        id: json['id'] as String,
+        name: json['name'] as String? ?? 'Clase',
+        instructorName: json['instructorName'] as String?,
+        startsAt: DateTime.parse(json['startsAtUtc'] as String).toLocal(),
+        durationMinutes: json['durationMinutes'] as int? ?? 0,
+        capacity: json['capacity'] as int? ?? 0,
+        bookedCount: json['bookedCount'] as int? ?? 0,
+        availableSpots: json['availableSpots'] as int? ?? 0,
+        myStatus: ReservationStatus.fromCode(json['myStatus'] as int?),
+      );
+}
+
 class Payment {
   const Payment({
     required this.id,

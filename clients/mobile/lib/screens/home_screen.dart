@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../services/member_api.dart';
 import 'tabs/membership_tab.dart';
 import 'tabs/checkin_tab.dart';
+import 'tabs/classes_tab.dart';
 import 'tabs/history_tab.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,9 +26,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final tabs = [
       MembershipTab(api: widget.api),
       CheckInTab(api: widget.api),
+      ClassesTab(api: widget.api),
       HistoryTab(api: widget.api),
     ];
-    final titles = ['Hola, $firstName', 'Check-in', 'Historial'];
+    final titles = ['Hola, $firstName', 'Check-in', 'Clases', 'Historial'];
 
     return Scaffold(
       appBar: AppBar(
@@ -47,6 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.card_membership_outlined), selectedIcon: Icon(Icons.card_membership), label: 'Mi plan'),
           NavigationDestination(icon: Icon(Icons.login_outlined), selectedIcon: Icon(Icons.login), label: 'Check-in'),
+          NavigationDestination(icon: Icon(Icons.event_outlined), selectedIcon: Icon(Icons.event), label: 'Clases'),
           NavigationDestination(icon: Icon(Icons.history), label: 'Historial'),
         ],
       ),

@@ -57,6 +57,42 @@ class MemberApi {
       occupancy: json['occupancy'] as int? ?? 0,
     );
   }
+
+  // --- Clases (Fase 7) ---
+
+  /// Próximas clases con cupo y el estado de reserva del propio miembro.
+  Future<List<MemberClass>> getClasses() => _get(
+        '/me/classes',
+        (body) => ((body as List?) ?? []).map((e) => MemberClass.fromJson(e as Map<String, dynamic>)).toList(),
+      );
+
+  /// Reserva una clase (o entra a lista de espera si está llena). Devuelve el estado obtenido.
+  Future<ReservationStatus> reserveClass(String sessionId) =>
+      _postForStatus('/me/classes/$sessionId/reserve');
+
+  /// Cancela la reserva del miembro para una clase.
+  Future<void> cancelReservation(String sessionId) =>
+      _postForStatus('/me/classes/$sessionId/cancel');
+
+  Future<ReservationStatus> _postForStatus(String path) async {
+    final res = await http.post(Uri.parse('${AppConfig.apiBaseUrl}$path'), headers: _headers);
+    if (res.statusCode == 401) {
+      await _auth.logout();
+      throw ApiException('Sesión expirada.');
+    }
+    if (res.statusCode >= 400) {
+      String message = 'No se pudo completar la operación (${res.statusCode}).';
+      try {
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
+        if (body['detail'] is String) message = body['detail'] as String;
+      } catch (_) {}
+      throw ApiException(message);
+    }
+    if (res.body.isEmpty) return ReservationStatus.none;
+    final json = jsonDecode(res.body) as Map<String, dynamic>;
+    // /reserve devuelve { status, session }; /cancel devuelve la sesión (sin status).
+    return ReservationStatus.fromCode(json['status'] as int?);
+  }
 }
 
 class CheckInResult {
