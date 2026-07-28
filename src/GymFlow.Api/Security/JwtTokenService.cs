@@ -44,6 +44,21 @@ public sealed class JwtTokenService(IOptions<JwtSettings> options) : IJwtTokenSe
         return Build(claims);
     }
 
+    public AccessToken IssueForPlatformAdmin(PlatformAdmin admin)
+    {
+        // Sin tenant_id: el super-admin opera a través de todos los tenants. El actor=platform
+        // lo distingue de staff/member; el middleware de tenant exenta las rutas /api/platform.
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, admin.Id.ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(GymFlowClaims.ActorType, GymFlowClaims.ActorPlatform),
+            new(JwtRegisteredClaimNames.Name, admin.FullName),
+            new(JwtRegisteredClaimNames.Email, admin.Email),
+        };
+        return Build(claims);
+    }
+
     private AccessToken Build(IEnumerable<Claim> claims)
     {
         var expiresAt = DateTime.UtcNow.AddMinutes(_settings.AccessTokenMinutes);

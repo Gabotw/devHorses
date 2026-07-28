@@ -84,7 +84,10 @@ npm run build
   con ingresos por día/medio, morosidad (monto en riesgo), retención/churn, miembros y
   ocupación por hora. Panel Angular: página **Dashboard** (KPIs, gráficas de barras CSS,
   selector de rango), visible solo para owner/admin.
-- ⏭️ **Fase 6** — Billing del SaaS (siguiente): suscripción de tenants a la plataforma (solo con tracción).
+- ✅ **Fase 6** — Billing del SaaS: capa de plataforma (super-admin `actor=platform`) con
+  catálogo de planes, suscripción por tenant (estado/período) y corte de morosidad SaaS
+  (job `saas-billing-sweep`). API `/api/platform/*` (backend; consola web pendiente).
+- ⏭️ **Fase 7** — Clases (post-MVP): horarios, cupos, reservas, waitlist.
 - **Deploy**: DB en **Neon** (conectada vía user-secrets/env). Backend dockerizado para
   **Render** (`Dockerfile` + `render.yaml`); ver sección "Deploy (Render)".
 
@@ -136,6 +139,28 @@ no acceden a `/me/*` y viceversa. El memberId sale del claim `sub`, nunca del cl
   estado y ocupación por hora (0–23).
 - Front: página **Dashboard** (`clients/web`, ruta `/dashboard`, solo owner/admin) con KPIs,
   gráficas de barras en CSS (sin dependencias de charting) y selector de rango (`p-datepicker`).
+
+## Billing del SaaS (Fase 6)
+- Capa de **plataforma** (cross-tenant), separada del panel del gimnasio. Entidades sin
+  `ITenantScoped` (no llevan global query filter, igual que `Tenant`): `PlatformPlan`
+  (catálogo SaaS: precio decimal, días de período, tope de miembros), `Subscription`
+  (suscripción vigente de un tenant, snapshot de plan + estado + período; única por tenant) y
+  `PlatformAdmin` (super-admin).
+- **Auth**: `POST /api/platform/auth/login` emite un JWT con `actor=platform` y **sin**
+  `tenant_id`. Policy `Platform` exige ese claim. El `TenantResolutionMiddleware` exenta
+  `/api/platform/*` (opera cross-tenant); por eso un token de plataforma **no** entra a los
+  endpoints por-tenant (401) y un token de staff/member **no** entra a `/api/platform` (403).
+- **Endpoints** (super-admin): `GET/POST/PUT /api/platform/plans` (+ activate/deactivate),
+  `GET /api/platform/tenants` (gimnasios con su suscripción y conteo de miembros),
+  `POST /api/platform/tenants/{id}/subscription` (asignar/cambiar plan),
+  `.../subscription/renew` y `.../subscription/cancel`. Al cambiar la suscripción se sincroniza
+  el estado cacheado en `Tenant.SubscriptionStatus` (lo que decide si el gimnasio está activo).
+- **Morosidad SaaS**: job diario `saas-billing-sweep` (Hangfire, 04:00) marca `PastDue` las
+  suscripciones vigentes cuyo período venció (hoy en la zona del tenant) y sincroniza el tenant.
+- **Cobro**: manual/interno por ahora (coherente con "activar solo con tracción"); el cobro real
+  reusaría `IPaymentGateway`. **Consola web del super-admin: pendiente** (hoy solo API).
+- Seed (Development): super-admin `admin@gymflow.pe` / `Superadmin123!`, planes `Starter`
+  (S/ 99, 200 miembros) y `Pro` (S/ 199, ilimitado), y el gimnasio demo suscrito a `Starter`.
 
 ## Check-in & aforo (Fase 3)
 - `CheckIn` (ITenantScoped) guarda `OccurredAtUtc` + `LocalDate` (día en zona del tenant)

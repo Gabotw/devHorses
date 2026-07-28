@@ -6,6 +6,7 @@ using GymFlow.Application.Features.MemberAuth;
 using GymFlow.Application.Features.Members;
 using GymFlow.Application.Features.Memberships;
 using GymFlow.Application.Features.Payments;
+using GymFlow.Application.Features.Platform;
 using GymFlow.Application.Features.Plans;
 using GymFlow.Application.Features.Reports;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +27,12 @@ public static class DependencyInjection
         services.AddScoped<IMemberAuthService, MemberAuthService>();
         services.AddScoped<IMeService, MeService>();
         services.AddScoped<IReportService, ReportService>();
+
+        // Billing del SaaS (Fase 6) — nivel plataforma.
+        services.AddScoped<IPlatformAuthService, PlatformAuthService>();
+        services.AddScoped<IPlatformPlanService, PlatformPlanService>();
+        services.AddScoped<IPlatformBillingService, PlatformBillingService>();
+        services.AddScoped<ISaasBillingSweepService, SaasBillingSweepService>();
         return services;
     }
 }

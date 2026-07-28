@@ -64,6 +64,7 @@ public static class DependencyInjection
 
         services.AddHangfireServer();
         services.AddScoped<OverdueSweepJob>();
+        services.AddScoped<SaasBillingSweepJob>();
 
         return services;
     }

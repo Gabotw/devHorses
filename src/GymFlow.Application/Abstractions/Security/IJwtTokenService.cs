@@ -12,6 +12,9 @@ public interface IJwtTokenService
 
     /// <summary>Emite un token para un miembro (app móvil). Lleva sub=memberId, tenant_id y actor=member.</summary>
     AccessToken IssueForMember(Member member);
+
+    /// <summary>Emite un token para un super-admin de plataforma. Lleva sub=adminId y actor=platform, SIN tenant_id.</summary>
+    AccessToken IssueForPlatformAdmin(PlatformAdmin admin);
 }
 
 /// <summary>Token emitido y su expiración (UTC).</summary>

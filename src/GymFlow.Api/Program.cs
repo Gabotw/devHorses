@@ -75,6 +75,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(Policies.Manager, p => p.RequireRole(Policies.ManagerRoles));
     options.AddPolicy(Policies.Staff, p => p.RequireRole(Policies.StaffRoles));
     options.AddPolicy(Policies.Member, p => p.RequireClaim(GymFlowClaims.ActorType, GymFlowClaims.ActorMember));
+    options.AddPolicy(Policies.Platform, p => p.RequireClaim(GymFlowClaims.ActorType, GymFlowClaims.ActorPlatform));
 });
 
 builder.Services.AddControllers(options =>
@@ -144,6 +145,12 @@ app.Services.GetRequiredService<IRecurringJobManager>().AddOrUpdate<OverdueSweep
     OverdueSweepJob.RecurringJobId,
     job => job.RunAsync(),
     Cron.Daily(3));
+
+// Corte de billing SaaS diario (04:00). Marca morosas las suscripciones de tenant vencidas.
+app.Services.GetRequiredService<IRecurringJobManager>().AddOrUpdate<SaasBillingSweepJob>(
+    SaasBillingSweepJob.RecurringJobId,
+    job => job.RunAsync(),
+    Cron.Daily(4));
 
 // Migración al arrancar (en todos los entornos) y seed opcional. En Development siempre
 // siembra; en producción solo si Seed:Enabled=true (útil para poblar el tenant demo una vez).
