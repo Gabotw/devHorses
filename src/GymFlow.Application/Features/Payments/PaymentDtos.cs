@@ -10,14 +10,6 @@ public sealed record RegisterCashPaymentRequest(
     decimal Amount,
     string? Notes);
 
-/// <summary>Cobro por pasarela: el front envía un token de la tarjeta (nunca el PAN).</summary>
-public sealed record ChargePaymentRequest(
-    Guid MemberId,
-    Guid? MembershipId,
-    decimal Amount,
-    string SourceToken,
-    string? Notes);
-
 public sealed record PaymentDto(
     Guid Id,
     Guid MemberId,

@@ -1,5 +1,6 @@
 using GymFlow.Domain.Common;
 using GymFlow.Domain.Entities;
+using GymFlow.Domain.Enums;
 
 namespace GymFlow.Domain.Tests;
 
@@ -10,43 +11,44 @@ public class MemberTests
     private static Member NewMember() => new(TenantId, "Juan Pérez", "12345678");
 
     [Fact]
-    public void MiembroNuevo_NoTieneAccesoAApp()
+    public void MiembroNuevo_NaceActivo()
     {
         var member = NewMember();
 
-        Assert.False(member.HasAppAccess);
-        Assert.Null(member.PasswordHash);
+        Assert.Equal(MemberStatus.Active, member.Status);
+        Assert.Equal("Juan Pérez", member.FullName);
+        Assert.Equal("12345678", member.DocumentId);
     }
 
     [Fact]
-    public void SetPasswordHash_HabilitaAccesoAApp()
+    public void Deactivate_MarcaInactivo_YActivateLoRevierte()
     {
         var member = NewMember();
 
-        member.SetPasswordHash("$2a$11$hashficticio");
+        member.Deactivate();
+        Assert.Equal(MemberStatus.Inactive, member.Status);
 
-        Assert.True(member.HasAppAccess);
-        Assert.Equal("$2a$11$hashficticio", member.PasswordHash);
+        member.Activate();
+        Assert.Equal(MemberStatus.Active, member.Status);
     }
 
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void SetPasswordHash_Vacio_Lanza(string hash)
+    public void SetFullName_Vacio_Lanza(string name)
     {
         var member = NewMember();
 
-        Assert.Throws<DomainException>(() => member.SetPasswordHash(hash));
+        Assert.Throws<DomainException>(() => member.SetFullName(name));
     }
 
-    [Fact]
-    public void RegisterLogin_FijaUltimoAcceso()
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void SetDocumentId_Vacio_Lanza(string doc)
     {
         var member = NewMember();
-        Assert.Null(member.LastLoginAtUtc);
 
-        member.RegisterLogin();
-
-        Assert.NotNull(member.LastLoginAtUtc);
+        Assert.Throws<DomainException>(() => member.SetDocumentId(doc));
     }
 }

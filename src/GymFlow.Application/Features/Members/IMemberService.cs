@@ -16,7 +16,4 @@ public interface IMemberService
     Task DeactivateAsync(Guid id, CancellationToken ct = default);
 
     Task ActivateAsync(Guid id, CancellationToken ct = default);
-
-    /// <summary>Asigna/renueva la contraseña de acceso a la app del miembro (acción de staff).</summary>
-    Task SetPasswordAsync(Guid id, SetMemberPasswordRequest request, CancellationToken ct = default);
 }

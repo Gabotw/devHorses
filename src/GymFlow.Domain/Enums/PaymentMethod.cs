@@ -1,12 +1,10 @@
 namespace GymFlow.Domain.Enums;
 
 /// <summary>
-/// Medio con el que el miembro pagó. <see cref="Cash"/> es el registro manual (Fase 2);
-/// <see cref="Culqi"/>/<see cref="Izipay"/> son pasarelas (detrás de <c>IPaymentGateway</c>).
+/// Medio con el que el miembro pagó en recepción. El cobro ocurre fuera del sistema;
+/// aquí solo se deja constancia. Por ahora solo <see cref="Cash"/> (registro manual).
 /// </summary>
 public enum PaymentMethod
 {
     Cash = 1,
-    Culqi = 2,
-    Izipay = 3,
 }

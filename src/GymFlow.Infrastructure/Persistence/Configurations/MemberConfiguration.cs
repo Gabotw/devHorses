@@ -19,8 +19,6 @@ public sealed class MemberConfiguration : IEntityTypeConfiguration<Member>
         builder.Property(m => m.Email).HasMaxLength(256);
         builder.Property(m => m.PhotoUrl).HasMaxLength(512);
         builder.Property(m => m.Status).HasConversion<int>().IsRequired();
-        builder.Property(m => m.PasswordHash).HasMaxLength(200);
-        builder.Property(m => m.LastLoginAtUtc);
 
         builder.HasIndex(m => m.TenantId);
 

@@ -15,12 +15,6 @@ public static class Policies
     /// <summary>Cualquier staff autenticado (incluye Reception): operación diaria.</summary>
     public const string Staff = "Staff";
 
-    /// <summary>Miembro autenticado desde la app (token con actor=member). Solo endpoints /me.</summary>
-    public const string Member = "Member";
-
-    /// <summary>Super-admin de la plataforma (token con actor=platform). Solo endpoints /api/platform.</summary>
-    public const string Platform = "Platform";
-
     public static readonly string[] ManagerRoles =
         [nameof(StaffRole.Owner), nameof(StaffRole.Admin)];
 

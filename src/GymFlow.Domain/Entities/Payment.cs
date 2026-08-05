@@ -4,10 +4,9 @@ using GymFlow.Domain.Enums;
 namespace GymFlow.Domain.Entities;
 
 /// <summary>
-/// Pago de un miembro (típicamente por una membresía). El monto es siempre
-/// <see cref="decimal"/> (no-negociable). El efectivo se registra ya completado;
-/// un cobro por pasarela nace <see cref="PaymentStatus.Pending"/> y se resuelve luego
-/// con <see cref="Complete"/> o <see cref="Fail"/> según responda el gateway.
+/// Pago de un miembro (típicamente por una membresía), cobrado en recepción. El monto es
+/// siempre <see cref="decimal"/> (no-negociable). El pago se registra ya completado; el
+/// cobro real ocurre fuera del sistema y aquí solo se deja constancia.
 /// </summary>
 public class Payment : Entity, ITenantScoped
 {
@@ -44,7 +43,7 @@ public class Payment : Entity, ITenantScoped
 
     public PaymentStatus Status { get; private set; }
 
-    /// <summary>Referencia del pago en la pasarela (charge id de Culqi/Izipay). Null si es efectivo.</summary>
+    /// <summary>Referencia/recibo del pago (opcional). Null si no se registró una.</summary>
     public string? GatewayReference { get; private set; }
 
     /// <summary>Motivo del rechazo cuando <see cref="Status"/> es <see cref="PaymentStatus.Failed"/>.</summary>
@@ -67,21 +66,7 @@ public class Payment : Entity, ITenantScoped
         return payment;
     }
 
-    /// <summary>Inicia un cobro por pasarela. Queda pendiente hasta la respuesta del gateway.</summary>
-    public static Payment StartGatewayCharge(
-        Guid tenantId, Guid memberId, Guid? membershipId, decimal amount, PaymentMethod method, string? notes = null)
-    {
-        if (method == PaymentMethod.Cash)
-            throw new DomainException("El efectivo no pasa por pasarela; usa RegisterCash.");
-
-        return new Payment(tenantId, memberId, membershipId, amount, method)
-        {
-            Status = PaymentStatus.Pending,
-            Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim(),
-        };
-    }
-
-    /// <summary>Marca el pago como completado (efectivo cobrado o pasarela aprobada).</summary>
+    /// <summary>Marca el pago como completado.</summary>
     public void Complete(string? gatewayReference, DateTime paidAtUtc)
     {
         if (Status == PaymentStatus.Completed)

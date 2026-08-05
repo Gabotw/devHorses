@@ -1,5 +1,4 @@
 using GymFlow.Application.Abstractions.Persistence;
-using GymFlow.Application.Abstractions.Security;
 using GymFlow.Application.Abstractions.Tenancy;
 using GymFlow.Application.Common;
 using GymFlow.Domain.Entities;
@@ -12,7 +11,7 @@ namespace GymFlow.Application.Features.Members;
 /// filter; el TenantId de creación viene de ITenantProvider, nunca del cliente.
 /// </summary>
 public sealed class MemberService(
-    IAppDbContext db, ITenantProvider tenant, IPasswordHasher passwordHasher) : IMemberService
+    IAppDbContext db, ITenantProvider tenant) : IMemberService
 {
     private const int MaxPageSize = 100;
 
@@ -98,18 +97,6 @@ public sealed class MemberService(
         var member = await db.Members.FirstOrDefaultAsync(m => m.Id == id, ct)
             ?? throw new NotFoundException("Miembro no encontrado.");
         member.Activate();
-        await db.SaveChangesAsync(ct);
-    }
-
-    public async Task SetPasswordAsync(Guid id, SetMemberPasswordRequest request, CancellationToken ct = default)
-    {
-        if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 6)
-            throw new ConflictException("La contraseña debe tener al menos 6 caracteres.");
-
-        var member = await db.Members.FirstOrDefaultAsync(m => m.Id == id, ct)
-            ?? throw new NotFoundException("Miembro no encontrado.");
-
-        member.SetPasswordHash(passwordHasher.Hash(request.Password));
         await db.SaveChangesAsync(ct);
     }
 

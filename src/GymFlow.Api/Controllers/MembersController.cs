@@ -53,15 +53,6 @@ public sealed class MembersController(
         return NoContent();
     }
 
-    /// <summary>Asigna/renueva la contraseña de acceso a la app del miembro. Restringido a Owner/Admin.</summary>
-    [HttpPost("{id:guid}/set-password")]
-    [Authorize(Policy = Policies.Manager)]
-    public async Task<IActionResult> SetPassword(Guid id, [FromBody] SetMemberPasswordRequest request, CancellationToken ct)
-    {
-        await members.SetPasswordAsync(id, request, ct);
-        return NoContent();
-    }
-
     // --- Membresías del miembro ---
 
     [HttpGet("{id:guid}/memberships")]

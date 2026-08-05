@@ -21,12 +21,4 @@ public sealed class PaymentsController(IPaymentService payments) : ControllerBas
         var created = await payments.RegisterCashAsync(request, ct);
         return CreatedAtAction(nameof(ListByMember), new { memberId = created.MemberId }, created);
     }
-
-    /// <summary>Cobra por pasarela (Culqi) usando un token de tarjeta generado en el cliente.</summary>
-    [HttpPost("charge")]
-    public async Task<IActionResult> Charge([FromBody] ChargePaymentRequest request, CancellationToken ct)
-    {
-        var result = await payments.ChargeAsync(request, ct);
-        return Ok(result);
-    }
 }

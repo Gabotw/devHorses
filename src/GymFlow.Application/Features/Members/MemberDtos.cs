@@ -17,9 +17,6 @@ public sealed record UpdateMemberRequest(
     string? Email,
     string? PhotoUrl);
 
-/// <summary>El staff asigna/renueva la contraseña de acceso a la app del miembro.</summary>
-public sealed record SetMemberPasswordRequest(string Password);
-
 public sealed record MemberDto(
     Guid Id,
     string FullName,

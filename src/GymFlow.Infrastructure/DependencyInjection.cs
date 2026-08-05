@@ -1,9 +1,7 @@
-using GymFlow.Application.Abstractions.Payments;
 using GymFlow.Application.Abstractions.Persistence;
 using GymFlow.Application.Abstractions.Security;
 using GymFlow.Application.Abstractions.Time;
 using GymFlow.Infrastructure.Jobs;
-using GymFlow.Infrastructure.Payments;
 using GymFlow.Infrastructure.Persistence;
 using GymFlow.Infrastructure.Security;
 using GymFlow.Infrastructure.Time;
@@ -35,10 +33,6 @@ public static class DependencyInjection
         services.AddSingleton<IClock, SystemClock>();
         services.AddScoped<AppDbSeeder>();
 
-        // --- Pasarela de pago (puerto IPaymentGateway → adaptador Culqi) ---
-        services.Configure<CulqiSettings>(configuration.GetSection(CulqiSettings.SectionName));
-        services.AddHttpClient<IPaymentGateway, CulqiPaymentGateway>();
-
         return services;
     }
 
@@ -64,7 +58,6 @@ public static class DependencyInjection
 
         services.AddHangfireServer();
         services.AddScoped<OverdueSweepJob>();
-        services.AddScoped<SaasBillingSweepJob>();
 
         return services;
     }

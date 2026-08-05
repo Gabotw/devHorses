@@ -47,14 +47,6 @@ public class Member : Entity, ITenantScoped
 
     public MemberStatus Status { get; private set; }
 
-    /// <summary>Hash BCrypt de la contraseña de la app del miembro. Null = sin acceso a la app.</summary>
-    public string? PasswordHash { get; private set; }
-
-    public DateTime? LastLoginAtUtc { get; private set; }
-
-    /// <summary>El miembro puede entrar a la app solo si tiene contraseña asignada.</summary>
-    public bool HasAppAccess => !string.IsNullOrEmpty(PasswordHash);
-
     public void SetFullName(string fullName)
     {
         if (string.IsNullOrWhiteSpace(fullName))
@@ -93,21 +85,6 @@ public class Member : Entity, ITenantScoped
     public void Deactivate()
     {
         Status = MemberStatus.Inactive;
-        Touch();
-    }
-
-    /// <summary>Asigna/renueva la contraseña de acceso a la app (recibe el hash ya calculado).</summary>
-    public void SetPasswordHash(string passwordHash)
-    {
-        if (string.IsNullOrWhiteSpace(passwordHash))
-            throw new DomainException("El hash de contraseña es obligatorio.");
-        PasswordHash = passwordHash;
-        Touch();
-    }
-
-    public void RegisterLogin()
-    {
-        LastLoginAtUtc = DateTime.UtcNow;
         Touch();
     }
 }

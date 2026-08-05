@@ -39,45 +39,4 @@ public class PaymentTests
         Assert.Throws<DomainException>(() =>
             Payment.RegisterCash(TenantId, MemberId, null, amount, DateTime.UtcNow));
     }
-
-    [Fact]
-    public void StartGatewayCharge_NacePendiente()
-    {
-        var payment = Payment.StartGatewayCharge(TenantId, MemberId, null, 80m, PaymentMethod.Culqi);
-
-        Assert.Equal(PaymentStatus.Pending, payment.Status);
-        Assert.Null(payment.PaidAtUtc);
-    }
-
-    [Fact]
-    public void StartGatewayCharge_ConEfectivo_Lanza()
-    {
-        Assert.Throws<DomainException>(() =>
-            Payment.StartGatewayCharge(TenantId, MemberId, null, 80m, PaymentMethod.Cash));
-    }
-
-    [Fact]
-    public void Complete_MarcaCompletadoYGuardaReferencia()
-    {
-        var payment = Payment.StartGatewayCharge(TenantId, MemberId, null, 80m, PaymentMethod.Culqi);
-        var paidAt = new DateTime(2026, 3, 2, 9, 0, 0, DateTimeKind.Utc);
-
-        payment.Complete("chr_test_123", paidAt);
-
-        Assert.Equal(PaymentStatus.Completed, payment.Status);
-        Assert.Equal("chr_test_123", payment.GatewayReference);
-        Assert.Equal(paidAt, payment.PaidAtUtc);
-    }
-
-    [Fact]
-    public void Fail_MarcaFallidoConMotivo_SinFecha()
-    {
-        var payment = Payment.StartGatewayCharge(TenantId, MemberId, null, 80m, PaymentMethod.Culqi);
-
-        payment.Fail("Tarjeta declinada");
-
-        Assert.Equal(PaymentStatus.Failed, payment.Status);
-        Assert.Equal("Tarjeta declinada", payment.FailureReason);
-        Assert.Null(payment.PaidAtUtc);
-    }
 }

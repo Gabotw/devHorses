@@ -32,16 +32,6 @@ public sealed class AppDbContext(
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<CheckIn> CheckIns => Set<CheckIn>();
 
-    // Billing del SaaS (Fase 6) — entidades de nivel plataforma: NO llevan global query
-    // filter (el super-admin opera cross-tenant, igual que sobre la propia tabla de tenants).
-    public DbSet<PlatformPlan> PlatformPlans => Set<PlatformPlan>();
-    public DbSet<Subscription> Subscriptions => Set<Subscription>();
-    public DbSet<PlatformAdmin> PlatformAdmins => Set<PlatformAdmin>();
-
-    // Clases & reservas (Fase 7) — tenant-scoped (llevan global query filter, ver más abajo).
-    public DbSet<ClassSession> ClassSessions => Set<ClassSession>();
-    public DbSet<ClassReservation> ClassReservations => Set<ClassReservation>();
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -56,8 +46,6 @@ public sealed class AppDbContext(
         modelBuilder.Entity<Membership>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<Payment>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<CheckIn>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
-        modelBuilder.Entity<ClassSession>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
-        modelBuilder.Entity<ClassReservation>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
     }
 
     public override int SaveChanges()

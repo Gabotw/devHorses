@@ -2,11 +2,9 @@
 
 export type MemberStatus = 1 | 2; // Active = 1, Inactive = 2
 export type MembershipStatus = 1 | 2 | 3 | 4; // Active, Frozen, Expired, Overdue
-export type PaymentMethod = 1 | 2 | 3; // Cash = 1, Culqi = 2, Izipay = 3
+export type PaymentMethod = 1; // Cash = 1
 export type PaymentStatus = 1 | 2 | 3 | 4; // Pending, Completed, Failed, Refunded
 export type CheckInMethod = 1 | 2; // Reception = 1, App = 2
-export type ClassSessionStatus = 1 | 2; // Scheduled = 1, Cancelled = 2
-export type ClassReservationStatus = 1 | 2 | 3 | 4; // Booked, Waitlisted, Cancelled, Attended
 
 export interface LoginResult {
   accessToken: string;
@@ -85,46 +83,6 @@ export interface PagedResult<T> {
   totalPages: number;
 }
 
-// Clases & reservas (Fase 7).
-export interface ClassSession {
-  id: string;
-  name: string;
-  instructorName?: string | null;
-  startsAtUtc: string;
-  endsAtUtc: string;
-  localDate: string;
-  durationMinutes: number;
-  capacity: number;
-  status: ClassSessionStatus;
-  bookedCount: number;
-  waitlistCount: number;
-  availableSpots: number;
-}
-
-export interface ClassReservation {
-  id: string;
-  classSessionId: string;
-  memberId: string;
-  memberName: string;
-  status: ClassReservationStatus;
-  createdAtUtc: string;
-}
-
-export interface CreateClassSessionPayload {
-  name: string;
-  instructorName?: string | null;
-  startsAtUtc: string;
-  durationMinutes: number;
-  capacity: number;
-}
-
-export const CLASS_RESERVATION_STATUS_LABEL: Record<number, string> = {
-  1: 'Con cupo',
-  2: 'En espera',
-  3: 'Cancelada',
-  4: 'Asistió',
-};
-
 // Reportes / dashboard (Fase 5). Reflejan los DTOs de ReportService.
 export interface ReportRange {
   from: string; // yyyy-MM-dd
@@ -187,8 +145,6 @@ export const MEMBERSHIP_STATUS_LABEL: Record<number, string> = {
 
 export const PAYMENT_METHOD_LABEL: Record<number, string> = {
   1: 'Efectivo',
-  2: 'Culqi',
-  3: 'Izipay',
 };
 
 export const PAYMENT_STATUS_LABEL: Record<number, string> = {

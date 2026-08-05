@@ -29,9 +29,6 @@ import { AuthService } from '../../core/auth.service';
         <a routerLink="/plans" routerLinkActive="active">
           <i class="pi pi-tags"></i> Planes
         </a>
-        <a routerLink="/classes" routerLinkActive="active">
-          <i class="pi pi-calendar"></i> Clases
-        </a>
       </nav>
 
       <div class="user">

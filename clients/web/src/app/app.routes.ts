@@ -28,10 +28,6 @@ export const routes: Routes = [
         path: 'plans',
         loadComponent: () => import('./pages/plans/plans-list').then((m) => m.PlansList),
       },
-      {
-        path: 'classes',
-        loadComponent: () => import('./pages/classes/classes').then((m) => m.ClassesPage),
-      },
     ],
   },
   { path: '**', redirectTo: '' },

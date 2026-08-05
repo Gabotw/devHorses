@@ -19,13 +19,7 @@ public sealed class AppDbSeeder(
     private const string Subdomain = "demo";
     private const string OwnerEmail = "owner@demo.gymflow.pe";
     private const string MemberDocument = "12345678";
-    private const string MemberPassword = "Miembro123!";
     private const string DemoPlanName = "Mensual";
-
-    // Billing SaaS (Fase 6): super-admin de plataforma y catálogo de planes.
-    private const string PlatformAdminEmail = "admin@gymflow.pe";
-    private const string PlatformAdminPassword = "Superadmin123!";
-    private const string StarterPlanName = "Starter";
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
@@ -61,58 +55,11 @@ public sealed class AppDbSeeder(
         }
 
         await SeedDemoMemberAsync(tenant.Id, cancellationToken);
-        await SeedPlatformBillingAsync(tenant, cancellationToken);
     }
 
     /// <summary>
-    /// Billing SaaS (Fase 6): super-admin de plataforma, un par de planes y la suscripción del
-    /// gimnasio demo. Todo a nivel plataforma (sin tenant en contexto). Idempotente.
-    /// </summary>
-    private async Task SeedPlatformBillingAsync(Tenant tenant, CancellationToken cancellationToken)
-    {
-        var adminExists = await db.PlatformAdmins
-            .AnyAsync(a => a.Email == PlatformAdminEmail, cancellationToken);
-
-        if (!adminExists)
-        {
-            var admin = new PlatformAdmin(
-                "Super Admin", PlatformAdminEmail, passwordHasher.Hash(PlatformAdminPassword));
-            db.PlatformAdmins.Add(admin);
-            await db.SaveChangesAsync(cancellationToken);
-            logger.LogInformation(
-                "Seed: super-admin de plataforma '{Email}' creado (password {Pass}).",
-                PlatformAdminEmail, PlatformAdminPassword);
-        }
-
-        var starter = await db.PlatformPlans
-            .FirstOrDefaultAsync(p => p.Name == StarterPlanName, cancellationToken);
-
-        if (starter is null)
-        {
-            starter = new PlatformPlan(StarterPlanName, 99m, billingPeriodDays: 30, maxMembers: 200);
-            db.PlatformPlans.Add(starter);
-            db.PlatformPlans.Add(new PlatformPlan("Pro", 199m, billingPeriodDays: 30, maxMembers: null));
-            await db.SaveChangesAsync(cancellationToken);
-            logger.LogInformation("Seed: planes de plataforma 'Starter' y 'Pro' creados.");
-        }
-
-        var hasSubscription = await db.Subscriptions
-            .AnyAsync(s => s.TenantId == tenant.Id, cancellationToken);
-
-        if (!hasSubscription)
-        {
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
-            var subscription = Subscription.Start(tenant.Id, starter, today);
-            db.Subscriptions.Add(subscription);
-            tenant.SetSubscriptionStatus(subscription.Status);
-            await db.SaveChangesAsync(cancellationToken);
-            logger.LogInformation("Seed: gimnasio demo suscrito al plan '{Plan}'.", StarterPlanName);
-        }
-    }
-
-    /// <summary>
-    /// Miembro de prueba con acceso a la app (contraseña) y una membresía activa, para
-    /// probar la app móvil de punta a punta en Development. Idempotente.
+    /// Miembro de prueba con una membresía activa, para poblar el panel en Development.
+    /// Idempotente.
     /// </summary>
     private async Task SeedDemoMemberAsync(Guid tenantId, CancellationToken cancellationToken)
     {
@@ -134,10 +81,9 @@ public sealed class AppDbSeeder(
         if (member is null)
         {
             member = new Member(tenantId, "Juan Pérez", MemberDocument, phone: "999888777");
-            member.SetPasswordHash(passwordHasher.Hash(MemberPassword));
             db.Members.Add(member);
             await db.SaveChangesAsync(cancellationToken);
-            logger.LogInformation("Seed: miembro demo '{Doc}' creado (password {Pass}).", MemberDocument, MemberPassword);
+            logger.LogInformation("Seed: miembro demo '{Doc}' creado.", MemberDocument);
         }
 
         var hasMembership = await db.Memberships

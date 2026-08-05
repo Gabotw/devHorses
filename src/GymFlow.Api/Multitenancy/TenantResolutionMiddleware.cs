@@ -143,9 +143,6 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next)
             || path.StartsWith("/openapi", StringComparison.OrdinalIgnoreCase)
             || path.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase)
             || path.StartsWith("/hangfire", StringComparison.OrdinalIgnoreCase)
-            // Billing SaaS (Fase 6): el super-admin opera cross-tenant. Sus endpoints no
-            // resuelven tenant; la policy Platform (actor=platform) los protege.
-            || path.StartsWith("/api/platform", StringComparison.OrdinalIgnoreCase)
             || path == "/";
     }
 
