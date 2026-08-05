@@ -51,4 +51,27 @@ public class MemberTests
 
         Assert.Throws<DomainException>(() => member.SetDocumentId(doc));
     }
+
+    [Fact]
+    public void SetAccessCode_CuatroDigitos_Asigna()
+    {
+        var member = NewMember();
+
+        member.SetAccessCode("0427");
+
+        Assert.Equal("0427", member.AccessCode);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("12")]
+    [InlineData("12345")]
+    [InlineData("12a4")]
+    [InlineData(" abc")]
+    public void SetAccessCode_Invalido_Lanza(string code)
+    {
+        var member = NewMember();
+
+        Assert.Throws<DomainException>(() => member.SetAccessCode(code));
+    }
 }

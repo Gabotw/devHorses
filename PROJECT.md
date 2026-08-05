@@ -30,8 +30,9 @@ Gimnasios independientes de barrio en Lima (1–3 sedes), dueño operador, que h
 | Registro de pago en recepción | ✅ | Manual (efectivo). El cobro real ocurre fuera del sistema |
 | Check-in / asistencia | ✅ | En recepción (panel web) + aforo en tiempo real |
 | Reportes / dashboard | ✅ | Ingresos, churn, ocupación, morosidad |
-| **Check-in por código de 4 dígitos** | ⏭️ Siguiente | Cada miembro tiene un código; la recepción lo teclea |
-| **Aviso de vencimiento por WhatsApp** | ⏭️ Siguiente | Enlace `wa.me` manual → luego Meta Cloud API automático |
+| **Check-in por código de 4 dígitos** | ✅ | Cada miembro tiene un código; la recepción lo teclea |
+| **Vencimientos + aviso por WhatsApp (manual)** | ✅ | Lista "por vencer" + botón `wa.me` con mensaje prellenado |
+| **WhatsApp automático (Meta Cloud API)** | ⏭️ Siguiente | Envío automático + recordatorio N días antes |
 | App móvil de miembros | ❌ Fuera de alcance | El software es solo para el gimnasio |
 | Pagos online / pasarela | ❌ Fuera de alcance | El pago no se hace dentro del sistema |
 | Reserva de clases | ❌ Fuera de alcance | |
@@ -128,7 +129,7 @@ Tenant (Gym)
   ├─ id, nombre, subdominio, zona_horaria, estado
 Member
   ├─ id, tenant_id, nombre, doc, telefono, email, estado, foto_url
-  │   codigo_acceso (4 dígitos, único por tenant) ← pendiente
+  │   codigo_acceso (4 dígitos, único por tenant)
 MembershipPlan
   ├─ id, tenant_id, nombre, precio (Decimal), duracion_dias, accesos_mes
 Membership
@@ -166,17 +167,15 @@ StaffUser
 - **Miembros & Membresías** — CRUD de miembros, planes, membresías con estados
   (activa/vencida/congelada/morosa). Panel Angular.
 - **Pagos en recepción** — registro manual (efectivo) e historial; morosidad + job Hangfire.
-- **Check-in & Asistencia** — check-in en recepción validando membresía vigente; aforo en
-  tiempo real (SignalR + Redis opcional).
+- **Check-in & Asistencia** — check-in en recepción **por código de 4 dígitos** (o búsqueda
+  por nombre/DNI) validando membresía vigente; aforo en tiempo real (SignalR + Redis opcional).
 - **Reportes & Dashboard** — ingresos, morosidad, churn, ocupación por hora.
+- **Vencimientos + aviso por WhatsApp (manual)** — página con las membresías por vencer y botón
+  que abre `wa.me` con el mensaje prellenado para que la recepción lo envíe con un clic.
 
 ### Siguiente (núcleo del enfoque actual)
-1. **Check-in por código de 4 dígitos** — cada miembro tiene un código corto; la recepción lo
-   teclea para registrar la asistencia. Reemplaza/complementa la búsqueda por nombre/DNI.
-2. **Vencimiento + aviso por WhatsApp** — mostrar "cuánto falta para vencer" en el panel;
-   avisar al cliente cuando su membresía está por caducar. Primero enlace `wa.me` manual
-   (un clic desde la recepción), luego Meta WhatsApp Cloud API (envío automático) + job de
-   recordatorio N días antes.
+1. **WhatsApp automático** — Meta WhatsApp Cloud API (envío automático del aviso, hoy manual) +
+   job de recordatorio N días antes. Requiere WhatsApp Business verificado y plantillas aprobadas.
 
 ### Fuera de alcance (por ahora)
 App de miembro, pagos online/pasarela, reserva de clases, billing del SaaS a los gimnasios.
@@ -188,7 +187,8 @@ App de miembro, pagos online/pasarela, reserva de clases, billing del SaaS a los
 - **Canal de aviso de vencimiento:** WhatsApp. Empezar con enlace `wa.me` (manual, un clic
   desde recepción); migrar a **Meta WhatsApp Cloud API** (envío automático) cuando haya
   tracción. Requiere número de WhatsApp Business verificado y plantillas aprobadas.
-- **Código de acceso de 4 dígitos:** definir generación (aleatorio único por tenant) y colisiones.
+- **Código de acceso de 4 dígitos:** *(resuelto)* aleatorio único por tenant, generado al crear
+  el miembro; unicidad garantizada por índice único parcial; regenerable desde el panel.
 - **Zona horaria por tenant** desde el inicio (LATAM multi-país a futuro).
 - **RBAC por tenant** — roles owner/admin/reception; el owner no puede ver otros tenants.
 

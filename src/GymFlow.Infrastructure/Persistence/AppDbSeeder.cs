@@ -81,9 +81,10 @@ public sealed class AppDbSeeder(
         if (member is null)
         {
             member = new Member(tenantId, "Juan Pérez", MemberDocument, phone: "999888777");
+            member.SetAccessCode("1234");
             db.Members.Add(member);
             await db.SaveChangesAsync(cancellationToken);
-            logger.LogInformation("Seed: miembro demo '{Doc}' creado.", MemberDocument);
+            logger.LogInformation("Seed: miembro demo '{Doc}' creado (código 1234).", MemberDocument);
         }
 
         var hasMembership = await db.Memberships

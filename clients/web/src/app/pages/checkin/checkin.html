@@ -7,27 +7,44 @@
     </div>
   </div>
 
-  <div class="checkin-bar">
-    <p-autocomplete
-      [(ngModel)]="selected"
-      [suggestions]="suggestions()"
-      (completeMethod)="searchMembers($event)"
-      optionLabel="fullName"
-      placeholder="Buscar miembro por nombre o documento"
-      [minQueryLength]="2"
-      [forceSelection]="true"
-      appendTo="body"
-      styleClass="member-search"
-    >
-      <ng-template let-member pTemplate="item">
-        <div class="suggestion">
-          <span class="name">{{ member.fullName }}</span>
-          <small class="doc">{{ member.documentId }}</small>
-        </div>
-      </ng-template>
-    </p-autocomplete>
-    <p-button label="Registrar ingreso" icon="pi pi-sign-in" [loading]="registering()" (onClick)="register()" />
+  <div class="checkin-bar code-bar">
+    <input
+      pInputText
+      [(ngModel)]="code"
+      (keyup.enter)="registerCode()"
+      inputmode="numeric"
+      maxlength="4"
+      placeholder="Código de 4 dígitos"
+      class="code-input"
+      aria-label="Código de acceso del miembro"
+    />
+    <p-button label="Registrar ingreso" icon="pi pi-sign-in" [loading]="registering()" (onClick)="registerCode()" />
   </div>
+
+  <details class="alt-search">
+    <summary>Buscar por nombre o documento</summary>
+    <div class="checkin-bar">
+      <p-autocomplete
+        [(ngModel)]="selected"
+        [suggestions]="suggestions()"
+        (completeMethod)="searchMembers($event)"
+        optionLabel="fullName"
+        placeholder="Buscar miembro por nombre o documento"
+        [minQueryLength]="2"
+        [forceSelection]="true"
+        appendTo="body"
+        styleClass="member-search"
+      >
+        <ng-template let-member pTemplate="item">
+          <div class="suggestion">
+            <span class="name">{{ member.fullName }}</span>
+            <small class="doc">{{ member.documentId }}</small>
+          </div>
+        </ng-template>
+      </p-autocomplete>
+      <p-button label="Registrar ingreso" icon="pi pi-sign-in" [loading]="registering()" (onClick)="register()" />
+    </div>
+  </details>
 
   @if (lastResult(); as r) {
     <div class="result" [class.ok]="r.checkIn.isValid" [class.bad]="!r.checkIn.isValid">

@@ -1,0 +1,45 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Vencimientos</h1>
+    <div class="range">
+      <p-select [options]="rangeOptions" optionLabel="label" optionValue="value"
+        [(ngModel)]="withinDays" (onChange)="load()" [style]="{ width: '14rem' }" />
+    </div>
+  </div>
+
+  <p-table [value]="items()" [loading]="loading()" [tableStyle]="{ 'min-width': '50rem' }" dataKey="membershipId">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Miembro</th>
+        <th>Teléfono</th>
+        <th>Plan</th>
+        <th>Vence</th>
+        <th>Estado</th>
+        <th style="width: 12rem">Aviso</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-r>
+      <tr>
+        <td>{{ r.fullName }}</td>
+        <td>{{ r.phone || '—' }}</td>
+        <td>{{ r.planName }}</td>
+        <td>
+          <div class="vence">
+            <span class="date">{{ r.endDate }}</span>
+            <p-tag [value]="daysLabel(r.daysToExpiry)" [severity]="daysSeverity(r.daysToExpiry)" />
+          </div>
+        </td>
+        <td>
+          <p-tag [value]="statusLabel[r.status]" [severity]="r.status === 4 ? 'danger' : 'success'" />
+        </td>
+        <td>
+          <p-button label="WhatsApp" icon="pi pi-whatsapp" severity="success" size="small"
+            [disabled]="!r.phone" (onClick)="notify(r)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="6">Nadie por vencer en este rango. 🎉</td></tr>
+    </ng-template>
+  </p-table>
+</div>

@@ -1,0 +1,21 @@
+.page {
+  padding: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.vence {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  .date {
+    font-variant-numeric: tabular-nums;
+  }
+}

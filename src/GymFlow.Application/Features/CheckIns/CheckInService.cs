@@ -22,13 +22,29 @@ public sealed class CheckInService(
 {
     public async Task<CheckInResultDto> RegisterAsync(RegisterCheckInRequest request, CancellationToken ct = default)
     {
+        var member = await db.Members.FirstOrDefaultAsync(m => m.Id == request.MemberId, ct)
+            ?? throw new NotFoundException("Miembro no encontrado.");
+
+        return await RegisterForMemberAsync(member, request.Method ?? CheckInMethod.Reception, ct);
+    }
+
+    public async Task<CheckInResultDto> RegisterByCodeAsync(RegisterByCodeRequest request, CancellationToken ct = default)
+    {
+        var code = (request.Code ?? string.Empty).Trim();
+        if (code.Length != 4 || !code.All(char.IsDigit))
+            throw new ConflictException("El código debe tener 4 dígitos.");
+
+        var member = await db.Members.FirstOrDefaultAsync(m => m.AccessCode == code, ct)
+            ?? throw new NotFoundException("No hay ningún miembro con ese código.");
+
+        return await RegisterForMemberAsync(member, CheckInMethod.Reception, ct);
+    }
+
+    private async Task<CheckInResultDto> RegisterForMemberAsync(Member member, CheckInMethod method, CancellationToken ct)
+    {
         var tenantId = tenant.GetRequiredTenantId();
         var today = await TenantTodayAsync(tenantId, ct);
         var nowUtc = clock.UtcNow;
-        var method = request.Method ?? CheckInMethod.Reception;
-
-        var member = await db.Members.FirstOrDefaultAsync(m => m.Id == request.MemberId, ct)
-            ?? throw new NotFoundException("Miembro no encontrado.");
 
         var reason = await ValidateAsync(member, today, ct);
 

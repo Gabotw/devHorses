@@ -5,6 +5,9 @@ namespace GymFlow.Application.Features.CheckIns;
 /// <summary>Solicita registrar un ingreso. Method opcional: por defecto recepción (web).</summary>
 public sealed record RegisterCheckInRequest(Guid MemberId, CheckInMethod? Method);
 
+/// <summary>Registra un ingreso por el código de acceso de 4 dígitos del miembro.</summary>
+public sealed record RegisterByCodeRequest(string Code);
+
 public sealed record CheckInDto(
     Guid Id,
     Guid MemberId,

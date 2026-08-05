@@ -62,6 +62,8 @@ public sealed class MemberService(
             request.Email,
             request.PhotoUrl);
 
+        member.SetAccessCode(await GenerateUniqueAccessCodeAsync(ct));
+
         db.Members.Add(member);
         await db.SaveChangesAsync(ct);
         return MemberDto.From(member);
@@ -100,11 +102,51 @@ public sealed class MemberService(
         await db.SaveChangesAsync(ct);
     }
 
+    public async Task<MemberDto> RegenerateAccessCodeAsync(Guid id, CancellationToken ct = default)
+    {
+        var member = await db.Members.FirstOrDefaultAsync(m => m.Id == id, ct)
+            ?? throw new NotFoundException("Miembro no encontrado.");
+
+        member.SetAccessCode(await GenerateUniqueAccessCodeAsync(ct));
+        await db.SaveChangesAsync(ct);
+        return MemberDto.From(member);
+    }
+
     private async Task EnsureDocumentUniqueAsync(string documentId, Guid? excludeId, CancellationToken ct)
     {
         var exists = await db.Members
             .AnyAsync(m => m.DocumentId == documentId && (excludeId == null || m.Id != excludeId), ct);
         if (exists)
             throw new ConflictException($"Ya existe un miembro con el documento {documentId}.");
+    }
+
+    /// <summary>Busca un código de 4 dígitos libre dentro del tenant. Intenta al azar unas veces
+    /// (rápido cuando hay pocos miembros) y, si no encuentra, recorre el rango en orden.</summary>
+    private async Task<string> GenerateUniqueAccessCodeAsync(CancellationToken ct)
+    {
+        var used = await db.Members
+            .Where(m => m.AccessCode != null)
+            .Select(m => m.AccessCode!)
+            .ToListAsync(ct);
+        var taken = new HashSet<string>(used);
+
+        if (taken.Count >= 10_000)
+            throw new ConflictException("No hay códigos de acceso de 4 dígitos disponibles en este gimnasio.");
+
+        for (var i = 0; i < 20; i++)
+        {
+            var candidate = Random.Shared.Next(0, 10_000).ToString("D4");
+            if (!taken.Contains(candidate))
+                return candidate;
+        }
+
+        for (var n = 0; n < 10_000; n++)
+        {
+            var candidate = n.ToString("D4");
+            if (!taken.Contains(candidate))
+                return candidate;
+        }
+
+        throw new ConflictException("No hay códigos de acceso de 4 dígitos disponibles en este gimnasio.");
     }
 }

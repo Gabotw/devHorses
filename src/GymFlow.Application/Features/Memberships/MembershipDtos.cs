@@ -25,3 +25,15 @@ public sealed record MembershipDto(
         m.Id, m.MemberId, m.PlanId, m.PriceAtPurchase, m.StartDate, m.EndDate,
         m.Status, m.FrozenFrom, m.FrozenUntil);
 }
+
+/// <summary>Membresía por vencer (o ya vencida/morosa) para la lista de avisos de recepción.
+/// <paramref name="DaysToExpiry"/> es negativo si ya venció.</summary>
+public sealed record ExpiringMembershipDto(
+    Guid MembershipId,
+    Guid MemberId,
+    string FullName,
+    string? Phone,
+    string PlanName,
+    DateOnly EndDate,
+    MembershipStatus Status,
+    int DaysToExpiry);

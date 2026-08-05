@@ -43,6 +43,10 @@ export class MembersService {
     return this.http.post<void>(`${this.base}/${id}/activate`, {});
   }
 
+  regenerateCode(id: string): Observable<Member> {
+    return this.http.post<Member>(`${this.base}/${id}/regenerate-code`, {});
+  }
+
   memberships(id: string): Observable<Membership[]> {
     return this.http.get<Membership[]>(`${this.base}/${id}/memberships`);
   }

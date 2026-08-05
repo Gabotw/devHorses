@@ -53,6 +53,11 @@ public sealed class MembersController(
         return NoContent();
     }
 
+    /// <summary>Genera un nuevo código de acceso de 4 dígitos para el miembro.</summary>
+    [HttpPost("{id:guid}/regenerate-code")]
+    public async Task<IActionResult> RegenerateCode(Guid id, CancellationToken ct)
+        => Ok(await members.RegenerateAccessCodeAsync(id, ct));
+
     // --- Membresías del miembro ---
 
     [HttpGet("{id:guid}/memberships")]

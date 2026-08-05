@@ -22,6 +22,11 @@ public sealed class MembershipsController(IMembershipService memberships) : Cont
     public async Task<IActionResult> ListByMember(Guid memberId, CancellationToken ct)
         => Ok(await memberships.ListByMemberAsync(memberId, ct));
 
+    /// <summary>Membresías por vencer (o ya vencidas) dentro de N días, para avisar a los clientes.</summary>
+    [HttpGet("expiring")]
+    public async Task<IActionResult> Expiring([FromQuery] int withinDays = 7, CancellationToken ct = default)
+        => Ok(await memberships.ListExpiringAsync(withinDays, ct));
+
     [HttpPost("{id:guid}/freeze")]
     public async Task<IActionResult> Freeze(Guid id, [FromBody] FreezeMembershipRequest request, CancellationToken ct)
         => Ok(await memberships.FreezeAsync(id, request, ct));

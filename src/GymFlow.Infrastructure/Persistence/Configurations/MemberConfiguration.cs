@@ -19,11 +19,17 @@ public sealed class MemberConfiguration : IEntityTypeConfiguration<Member>
         builder.Property(m => m.Email).HasMaxLength(256);
         builder.Property(m => m.PhotoUrl).HasMaxLength(512);
         builder.Property(m => m.Status).HasConversion<int>().IsRequired();
+        builder.Property(m => m.AccessCode).HasMaxLength(4).IsFixedLength();
 
         builder.HasIndex(m => m.TenantId);
 
         // Documento único por tenant.
         builder.HasIndex(m => new { m.TenantId, m.DocumentId }).IsUnique();
+
+        // Código de acceso único por tenant (solo cuando está asignado).
+        builder.HasIndex(m => new { m.TenantId, m.AccessCode })
+            .IsUnique()
+            .HasFilter("\"AccessCode\" IS NOT NULL");
 
         builder.HasOne<Tenant>()
             .WithMany()

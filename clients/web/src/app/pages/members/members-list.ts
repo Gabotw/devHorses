@@ -157,6 +157,16 @@ export class MembersList {
     });
   }
 
+  regenerateCode(m: Member): void {
+    this.membersApi.regenerateCode(m.id).subscribe({
+      next: (updated) => {
+        this.messages.add({ severity: 'success', summary: `Código de ${updated.fullName}: ${updated.accessCode}` });
+        this.load();
+      },
+      error: (err) => this.messages.add({ severity: 'error', summary: 'Error', detail: err.error?.detail ?? 'No se pudo generar el código' }),
+    });
+  }
+
   toggleActive(m: Member): void {
     const op = m.status === 1 ? this.membersApi.deactivate(m.id) : this.membersApi.activate(m.id);
     op.subscribe({

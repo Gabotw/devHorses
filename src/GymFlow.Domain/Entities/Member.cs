@@ -47,6 +47,10 @@ public class Member : Entity, ITenantScoped
 
     public MemberStatus Status { get; private set; }
 
+    /// <summary>Código de acceso de 4 dígitos que el miembro teclea en recepción para el check-in.
+    /// Único por tenant. Null hasta que se le asigne uno.</summary>
+    public string? AccessCode { get; private set; }
+
     public void SetFullName(string fullName)
     {
         if (string.IsNullOrWhiteSpace(fullName))
@@ -85,6 +89,16 @@ public class Member : Entity, ITenantScoped
     public void Deactivate()
     {
         Status = MemberStatus.Inactive;
+        Touch();
+    }
+
+    /// <summary>Asigna el código de acceso de 4 dígitos. La unicidad por tenant la garantiza
+    /// quien lo genera (índice único parcial en DB); aquí solo se valida el formato.</summary>
+    public void SetAccessCode(string code)
+    {
+        if (string.IsNullOrWhiteSpace(code) || code.Length != 4 || !code.All(char.IsDigit))
+            throw new DomainException("El código de acceso debe tener exactamente 4 dígitos.");
+        AccessCode = code;
         Touch();
     }
 }

@@ -25,8 +25,9 @@ public sealed record MemberDto(
     string? Email,
     string? PhotoUrl,
     MemberStatus Status,
+    string? AccessCode,
     DateTime CreatedAtUtc)
 {
     public static MemberDto From(Member m) => new(
-        m.Id, m.FullName, m.DocumentId, m.Phone, m.Email, m.PhotoUrl, m.Status, m.CreatedAtUtc);
+        m.Id, m.FullName, m.DocumentId, m.Phone, m.Email, m.PhotoUrl, m.Status, m.AccessCode, m.CreatedAtUtc);
 }

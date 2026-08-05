@@ -43,6 +43,27 @@
   }
 }
 
+.code-bar .code-input {
+  flex: 1;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.4rem;
+  text-align: center;
+  padding: 0.6rem 0.75rem;
+}
+
+.alt-search {
+  margin-bottom: 1rem;
+
+  summary {
+    cursor: pointer;
+    color: var(--p-text-muted-color, #6b7280);
+    font-size: 0.85rem;
+    margin-bottom: 0.6rem;
+    user-select: none;
+  }
+}
+
 .suggestion {
   display: flex;
   flex-direction: column;

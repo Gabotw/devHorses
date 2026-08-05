@@ -22,6 +22,7 @@ export interface Member {
   email?: string | null;
   photoUrl?: string | null;
   status: MemberStatus;
+  accessCode?: string | null;
   createdAtUtc: string;
 }
 
@@ -81,6 +82,18 @@ export interface PagedResult<T> {
   page: number;
   pageSize: number;
   totalPages: number;
+}
+
+// Vencimientos: membresías por vencer (o ya vencidas) para la lista de avisos.
+export interface ExpiringMembership {
+  membershipId: string;
+  memberId: string;
+  fullName: string;
+  phone?: string | null;
+  planName: string;
+  endDate: string; // yyyy-MM-dd
+  status: MembershipStatus;
+  daysToExpiry: number; // negativo si ya venció
 }
 
 // Reportes / dashboard (Fase 5). Reflejan los DTOs de ReportService.

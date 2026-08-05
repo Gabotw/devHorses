@@ -15,6 +15,11 @@ public sealed class CheckInsController(ICheckInService checkIns) : ControllerBas
     public async Task<IActionResult> Register([FromBody] RegisterCheckInRequest request, CancellationToken ct)
         => Ok(await checkIns.RegisterAsync(request, ct));
 
+    /// <summary>Registra un ingreso por el código de acceso de 4 dígitos del miembro.</summary>
+    [HttpPost("by-code")]
+    public async Task<IActionResult> RegisterByCode([FromBody] RegisterByCodeRequest request, CancellationToken ct)
+        => Ok(await checkIns.RegisterByCodeAsync(request, ct));
+
     /// <summary>Asistencia del día en la zona del tenant.</summary>
     [HttpGet("today")]
     public async Task<IActionResult> Today(CancellationToken ct)

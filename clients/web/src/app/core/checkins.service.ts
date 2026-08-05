@@ -23,6 +23,10 @@ export class CheckInsService {
     return this.http.post<CheckInResult>(this.base, { memberId, method: null });
   }
 
+  registerByCode(code: string): Observable<CheckInResult> {
+    return this.http.post<CheckInResult>(`${this.base}/by-code`, { code });
+  }
+
   today(): Observable<CheckIn[]> {
     return this.http.get<CheckIn[]>(`${this.base}/today`);
   }

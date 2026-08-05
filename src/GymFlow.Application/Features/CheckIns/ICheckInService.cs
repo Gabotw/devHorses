@@ -5,6 +5,9 @@ public interface ICheckInService
     /// <summary>Registra un ingreso validando la membresía vigente. Difunde el nuevo aforo.</summary>
     Task<CheckInResultDto> RegisterAsync(RegisterCheckInRequest request, CancellationToken ct = default);
 
+    /// <summary>Registra un ingreso buscando al miembro por su código de acceso de 4 dígitos.</summary>
+    Task<CheckInResultDto> RegisterByCodeAsync(RegisterByCodeRequest request, CancellationToken ct = default);
+
     /// <summary>Asistencia del día (zona del tenant), más reciente primero.</summary>
     Task<IReadOnlyList<CheckInDto>> ListTodayAsync(CancellationToken ct = default);
 

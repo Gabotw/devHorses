@@ -83,18 +83,20 @@ npm run build
 - ✅ **Pagos en recepción** — registro de pago manual (efectivo) e historial por miembro.
   Morosidad automática: job diario Hangfire (`overdue-sweep`, 03:00) marca morosas las
   membresías vencidas sin renovar.
-- ✅ **Check-in & aforo** — check-in en recepción validando membresía vigente, aforo en
-  tiempo real por SignalR (`/hubs/occupancy`, backplane Redis opcional) y asistencia del día.
+- ✅ **Check-in & aforo** — check-in en recepción **por código de 4 dígitos** (o búsqueda por
+  nombre/DNI) validando membresía vigente, aforo en tiempo real por SignalR
+  (`/hubs/occupancy`, backplane Redis opcional) y asistencia del día.
 - ✅ **Reportes & Dashboard** — `GET /api/reports/dashboard` (policy Manager): ingresos,
   morosidad, retención/churn, ocupación por hora. Panel: página **Dashboard** (owner/admin).
+- ✅ **Vencimientos & aviso por WhatsApp (manual)** — `GET /api/memberships/expiring?withinDays=N`
+  lista membresías por vencer (o ya vencidas) de miembros activos. Panel: página **Vencimientos**
+  con "días para vencer" y botón **WhatsApp** que abre un enlace `wa.me` con el mensaje
+  prellenado para que la recepción lo envíe con un clic.
 
 **Pendiente (núcleo del nuevo enfoque):**
-- ⏭️ **Check-in por código de 4 dígitos** — cada miembro tiene un código corto; la recepción
-  lo teclea para registrar la asistencia (reemplaza/complementa la búsqueda por nombre/DNI).
-- ⏭️ **Aviso de vencimiento por WhatsApp** — indicador de "cuánto falta para vencer" en el
-  panel y aviso al cliente cuando la membresía está por caducar. **Ahora:** enlace `wa.me`
-  que la recepción envía con un clic (cero costo/API). **Después:** Meta WhatsApp Cloud API
-  para envío automático (recordar implementarla cuando haya tracción).
+- ⏭️ **WhatsApp automático (Meta Cloud API)** — envío automático del aviso de vencimiento
+  (hoy es manual vía `wa.me`) + job de recordatorio N días antes. Requiere WhatsApp Business
+  verificado y plantillas aprobadas. Recordar implementarla cuando haya tracción.
 
 **Deploy:** DB en **Neon** (user-secrets/env). Backend dockerizado para **Render**
 (`Dockerfile` + `render.yaml`); ver "Deploy (Render)".
@@ -127,6 +129,11 @@ El panel Angular apunta a la URL pública de Render (`environment.apiBaseUrl`/pr
   gráficas de barras en CSS (sin dependencias de charting) y selector de rango (`p-datepicker`).
 
 ## Check-in & aforo
+- **Código de 4 dígitos:** cada `Member` tiene `AccessCode` (4 dígitos, único por tenant vía
+  índice único parcial; se genera al crear el miembro y se puede regenerar con
+  `POST /api/members/{id}/regenerate-code`). La recepción lo teclea en la página Check-in y
+  `POST /api/checkins/by-code` (`{code}`) busca al miembro y registra el ingreso. Se mantiene
+  la búsqueda por nombre/DNI (`POST /api/checkins`) como alternativa.
 - `CheckIn` (ITenantScoped) guarda `OccurredAtUtc` + `LocalDate` (día en zona del tenant)
   e `IsValid`/`Reason`. El aforo del día = ingresos válidos con `LocalDate == hoy`.
 - Tiempo real: puerto `IOccupancyNotifier` (Application) → adaptador `SignalROccupancyNotifier`
@@ -134,7 +141,16 @@ El panel Angular apunta a la URL pública de Render (`environment.apiBaseUrl`/pr
   en el handshake del hub (ver `OnMessageReceived`). Con `ConnectionStrings:Redis` se activa
   el backplane Redis (solo necesario con varias instancias de la Api).
 - Front: `@microsoft/signalr` conecta a `/hubs/occupancy` (proxied en dev con `ws:true`).
-- **Pendiente:** registro por **código de 4 dígitos** del miembro (ver roadmap).
+
+## Vencimientos & WhatsApp
+- `GET /api/memberships/expiring?withinDays=N` (policy Staff) devuelve, de **miembros activos**,
+  las membresías `Active`/`Overdue` cuyo `EndDate <= hoy + N` (hoy en la zona del tenant), con
+  `DaysToExpiry` (negativo si ya venció), nombre, teléfono y plan. Ordenadas por `EndDate`.
+- Front: página **Vencimientos** (ruta `/expirations`) con selector de rango (3/7/15/30 días),
+  badge de "días para vencer" y botón **WhatsApp**. El aviso es **manual**: arma el mensaje y abre
+  `https://wa.me/{telefono}?text=...` en una pestaña. El teléfono se normaliza a solo dígitos y,
+  si parece móvil peruano de 9 dígitos, se antepone `51` (heurística; ajustar para otros países).
+- **Pendiente:** envío automático vía Meta WhatsApp Cloud API + job de recordatorio (ver roadmap).
 
 ## Pagos (en recepción)
 - El pago se cobra fuera del sistema; la recepción solo lo **registra** (`POST /api/payments/cash`,

@@ -16,4 +16,7 @@ public interface IMemberService
     Task DeactivateAsync(Guid id, CancellationToken ct = default);
 
     Task ActivateAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Genera y asigna un nuevo código de acceso de 4 dígitos (único por tenant).</summary>
+    Task<MemberDto> RegenerateAccessCodeAsync(Guid id, CancellationToken ct = default);
 }

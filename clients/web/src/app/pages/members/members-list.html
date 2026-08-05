@@ -28,8 +28,9 @@
         <th>Nombre</th>
         <th>Documento</th>
         <th>Teléfono</th>
+        <th>Código</th>
         <th>Estado</th>
-        <th style="width: 15rem">Acciones</th>
+        <th style="width: 17rem">Acciones</th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-m>
@@ -38,12 +39,21 @@
         <td>{{ m.documentId }}</td>
         <td>{{ m.phone || '—' }}</td>
         <td>
+          @if (m.accessCode) {
+            <span class="access-code">{{ m.accessCode }}</span>
+          } @else {
+            <span class="muted">—</span>
+          }
+        </td>
+        <td>
           <p-tag [value]="statusLabel[m.status]" [severity]="m.status === 1 ? 'success' : 'secondary'" />
         </td>
         <td>
           <div class="row-actions">
             <p-button icon="pi pi-id-card" severity="secondary" [text]="true"
               pTooltip="Membresías" (onClick)="openMemberships(m)" ariaLabel="Membresías" />
+            <p-button icon="pi pi-refresh" severity="secondary" [text]="true"
+              pTooltip="Generar código nuevo" (onClick)="regenerateCode(m)" ariaLabel="Regenerar código" />
             <p-button icon="pi pi-pencil" severity="secondary" [text]="true"
               (onClick)="openEdit(m)" ariaLabel="Editar" />
             @if (auth.isManager()) {
@@ -58,7 +68,7 @@
       </tr>
     </ng-template>
     <ng-template pTemplate="emptymessage">
-      <tr><td colspan="5">Sin miembros todavía.</td></tr>
+      <tr><td colspan="6">Sin miembros todavía.</td></tr>
     </ng-template>
   </p-table>
 </div>

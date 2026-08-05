@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { AutoCompleteModule, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
 import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 
@@ -13,7 +14,7 @@ import { CheckIn, CheckInResult, Member } from '../../core/models';
 
 @Component({
   selector: 'app-checkin',
-  imports: [FormsModule, DatePipe, AutoCompleteModule, ButtonModule, TableModule, TagModule],
+  imports: [FormsModule, DatePipe, AutoCompleteModule, ButtonModule, InputTextModule, TableModule, TagModule],
   templateUrl: './checkin.html',
   styleUrl: './checkin.scss',
 })
@@ -28,6 +29,7 @@ export class CheckInPage implements OnInit, OnDestroy {
   readonly lastResult = signal<CheckInResult | null>(null);
   readonly registering = signal(false);
   selected: Member | string | null = null;
+  code = '';
 
   ngOnInit(): void {
     this.loadOccupancy();
@@ -48,6 +50,24 @@ export class CheckInPage implements OnInit, OnDestroy {
     this.membersApi.list(event.query, 1, 8).subscribe((res) => this.suggestions.set(res.items));
   }
 
+  /** Check-in por código de 4 dígitos (flujo principal en recepción). */
+  registerCode(): void {
+    const code = this.code.trim();
+    if (!/^\d{4}$/.test(code)) {
+      this.messages.add({ severity: 'warn', summary: 'Ingresa un código de 4 dígitos' });
+      return;
+    }
+
+    this.registering.set(true);
+    this.checkinsApi.registerByCode(code).subscribe({
+      next: (result) => {
+        this.handleResult(result);
+        this.code = '';
+      },
+      error: (err) => this.handleError(err, 'No se pudo registrar el ingreso'),
+    });
+  }
+
   register(): void {
     const member = this.selected;
     if (!member || typeof member === 'string' || !member.id) {
@@ -58,23 +78,29 @@ export class CheckInPage implements OnInit, OnDestroy {
     this.registering.set(true);
     this.checkinsApi.register(member.id).subscribe({
       next: (result) => {
-        this.registering.set(false);
-        this.lastResult.set(result);
-        this.occupancy.set(result.occupancy);
+        this.handleResult(result);
         this.selected = null;
         this.suggestions.set([]);
-        if (result.checkIn.isValid) {
-          this.messages.add({ severity: 'success', summary: `Ingreso de ${result.checkIn.memberName}` });
-        } else {
-          this.messages.add({ severity: 'error', summary: 'Ingreso no válido', detail: result.checkIn.reason ?? '' });
-        }
-        this.loadToday();
       },
-      error: (err) => {
-        this.registering.set(false);
-        this.messages.add({ severity: 'error', summary: 'Error', detail: err.error?.detail ?? 'No se pudo registrar el ingreso' });
-      },
+      error: (err) => this.handleError(err, 'No se pudo registrar el ingreso'),
     });
+  }
+
+  private handleResult(result: CheckInResult): void {
+    this.registering.set(false);
+    this.lastResult.set(result);
+    this.occupancy.set(result.occupancy);
+    if (result.checkIn.isValid) {
+      this.messages.add({ severity: 'success', summary: `Ingreso de ${result.checkIn.memberName}` });
+    } else {
+      this.messages.add({ severity: 'error', summary: 'Ingreso no válido', detail: result.checkIn.reason ?? '' });
+    }
+    this.loadToday();
+  }
+
+  private handleError(err: { error?: { detail?: string } }, fallback: string): void {
+    this.registering.set(false);
+    this.messages.add({ severity: 'error', summary: 'Error', detail: err.error?.detail ?? fallback });
   }
 
   private loadOccupancy(): void {

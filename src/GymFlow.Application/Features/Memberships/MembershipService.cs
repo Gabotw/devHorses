@@ -37,6 +37,39 @@ public sealed class MembershipService(
         return current is null ? null : MembershipDto.From(current);
     }
 
+    public async Task<IReadOnlyList<ExpiringMembershipDto>> ListExpiringAsync(int withinDays, CancellationToken ct = default)
+    {
+        var tenantId = tenant.GetRequiredTenantId();
+        var today = await TenantTodayAsync(tenantId, ct);
+        withinDays = withinDays is < 0 or > 365 ? 7 : withinDays;
+        var limit = today.AddDays(withinDays);
+
+        var rows = await (
+            from ms in db.Memberships.AsNoTracking()
+            where (ms.Status == MembershipStatus.Active || ms.Status == MembershipStatus.Overdue)
+                  && ms.EndDate <= limit
+            join mem in db.Members on ms.MemberId equals mem.Id
+            join pl in db.MembershipPlans on ms.PlanId equals pl.Id
+            where mem.Status == MemberStatus.Active
+            orderby ms.EndDate
+            select new
+            {
+                ms.Id,
+                ms.MemberId,
+                mem.FullName,
+                mem.Phone,
+                PlanName = pl.Name,
+                ms.EndDate,
+                ms.Status,
+            }).ToListAsync(ct);
+
+        return rows
+            .Select(r => new ExpiringMembershipDto(
+                r.Id, r.MemberId, r.FullName, r.Phone, r.PlanName, r.EndDate, r.Status,
+                r.EndDate.DayNumber - today.DayNumber))
+            .ToList();
+    }
+
     public async Task<MembershipDto> CreateAsync(CreateMembershipRequest request, CancellationToken ct = default)
     {
         var tenantId = tenant.GetRequiredTenantId();
