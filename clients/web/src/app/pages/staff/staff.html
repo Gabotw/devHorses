@@ -1,0 +1,89 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Personal</h1>
+    <p-button label="Nuevo usuario" icon="pi pi-plus" (onClick)="openNew()" />
+  </div>
+
+  <p-table [value]="users()" [loading]="loading()" [tableStyle]="{ 'min-width': '50rem' }" dataKey="id">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nombre</th>
+        <th>Correo</th>
+        <th>Rol</th>
+        <th>Estado</th>
+        <th>Último acceso</th>
+        <th style="width: 12rem">Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-u>
+      <tr>
+        <td>{{ u.fullName }}</td>
+        <td>{{ u.email }}</td>
+        <td><p-tag [value]="roleLabel[u.role]" [severity]="roleSeverity(u.role)" /></td>
+        <td>
+          <p-tag [value]="u.isActive ? 'Activo' : 'Inactivo'" [severity]="u.isActive ? 'success' : 'secondary'" />
+        </td>
+        <td>{{ u.lastLoginAtUtc ? (u.lastLoginAtUtc | date: 'yyyy-MM-dd HH:mm') : '—' }}</td>
+        <td>
+          <div class="row-actions">
+            <p-button icon="pi pi-pencil" severity="secondary" [text]="true"
+              pTooltip="Editar" (onClick)="openEdit(u)" ariaLabel="Editar" />
+            <p-button icon="pi pi-key" severity="secondary" [text]="true"
+              pTooltip="Cambiar contraseña" (onClick)="openReset(u)" ariaLabel="Cambiar contraseña" />
+            <p-button
+              [icon]="u.isActive ? 'pi pi-ban' : 'pi pi-check'"
+              [severity]="u.isActive ? 'danger' : 'success'"
+              [text]="true" (onClick)="toggleActive(u)"
+              [ariaLabel]="u.isActive ? 'Desactivar' : 'Activar'" />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="6">Sin usuarios todavía.</td></tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Alta / edición -->
+<p-dialog [visible]="showForm()" (visibleChange)="showForm.set($event)" [modal]="true" [style]="{ width: '460px' }"
+  [header]="editing() ? 'Editar usuario' : 'Nuevo usuario'" [closable]="true">
+  <div class="field">
+    <label for="name">Nombre completo *</label>
+    <input pInputText id="name" [(ngModel)]="form.fullName" />
+  </div>
+  <div class="field">
+    <label for="email">Correo *</label>
+    <input pInputText id="email" [(ngModel)]="form.email" [disabled]="!!editing()" />
+  </div>
+  @if (!editing()) {
+    <div class="field">
+      <label for="pass">Contraseña *</label>
+      <p-password id="pass" [(ngModel)]="form.password" [feedback]="false" [toggleMask]="true"
+        inputStyleClass="w-full" styleClass="w-full" />
+    </div>
+  }
+  <div class="field">
+    <label>Rol *</label>
+    <p-select [options]="roleOptions" optionLabel="label" optionValue="value"
+      [(ngModel)]="form.role" appendTo="body" [style]="{ width: '100%' }" />
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showForm.set(false)" />
+    <p-button label="Guardar" icon="pi pi-check" [loading]="saving()" (onClick)="save()" />
+  </ng-template>
+</p-dialog>
+
+<!-- Reset de contraseña -->
+<p-dialog [visible]="showReset()" (visibleChange)="showReset.set($event)" [modal]="true" [style]="{ width: '420px' }"
+  [header]="'Cambiar contraseña · ' + (resetTarget?.fullName ?? '')" [closable]="true">
+  <div class="field">
+    <label for="newpass">Nueva contraseña *</label>
+    <p-password id="newpass" [(ngModel)]="newPassword" [feedback]="false" [toggleMask]="true"
+      inputStyleClass="w-full" styleClass="w-full" />
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="showReset.set(false)" />
+    <p-button label="Guardar" icon="pi pi-check" [loading]="resetting()" (onClick)="confirmReset()" />
+  </ng-template>
+</p-dialog>

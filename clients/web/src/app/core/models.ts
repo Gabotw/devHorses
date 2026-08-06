@@ -5,6 +5,7 @@ export type MembershipStatus = 1 | 2 | 3 | 4; // Active, Frozen, Expired, Overdu
 export type PaymentMethod = 1; // Cash = 1
 export type PaymentStatus = 1 | 2 | 3 | 4; // Pending, Completed, Failed, Refunded
 export type CheckInMethod = 1 | 2; // Reception = 1, App = 2
+export type StaffRole = 1 | 2 | 3; // Owner = 1, Admin = 2, Reception = 3
 
 export interface LoginResult {
   accessToken: string;
@@ -83,6 +84,23 @@ export interface PagedResult<T> {
   pageSize: number;
   totalPages: number;
 }
+
+// Staff: usuarios del panel (recepción/admin/owner).
+export interface StaffUser {
+  id: string;
+  fullName: string;
+  email: string;
+  role: StaffRole;
+  isActive: boolean;
+  lastLoginAtUtc?: string | null;
+  createdAtUtc: string;
+}
+
+export const STAFF_ROLE_LABEL: Record<number, string> = {
+  1: 'Dueño',
+  2: 'Administrador',
+  3: 'Recepción',
+};
 
 // Vencimientos: membresías por vencer (o ya vencidas) para la lista de avisos.
 export interface ExpiringMembership {

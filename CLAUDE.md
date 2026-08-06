@@ -92,6 +92,9 @@ npm run build
   lista membresías por vencer (o ya vencidas) de miembros activos. Panel: página **Vencimientos**
   con "días para vencer" y botón **WhatsApp** que abre un enlace `wa.me` con el mensaje
   prellenado para que la recepción lo envíe con un clic.
+- ✅ **Personal (staff)** — CRUD de usuarios del panel con roles (owner/admin/recepción),
+  reset de contraseña y activar/desactivar. `api/staff/*` (policy Manager). Panel: página
+  **Personal** (solo owner/admin).
 
 **Pendiente (núcleo del nuevo enfoque):**
 - ⏭️ **WhatsApp automático (Meta Cloud API)** — envío automático del aviso de vencimiento
@@ -151,6 +154,15 @@ El panel Angular apunta a la URL pública de Render (`environment.apiBaseUrl`/pr
   `https://wa.me/{telefono}?text=...` en una pestaña. El teléfono se normaliza a solo dígitos y,
   si parece móvil peruano de 9 dígitos, se antepone `51` (heurística; ajustar para otros países).
 - **Pendiente:** envío automático vía Meta WhatsApp Cloud API + job de recordatorio (ver roadmap).
+
+## Personal (staff)
+- `api/staff/*` (policy **Manager**): `GET` lista, `POST` crea (nombre, correo, contraseña, rol),
+  `PUT {id}` edita nombre+rol (el correo no se cambia), `POST {id}/reset-password`,
+  `POST {id}/activate|deactivate`. Correo único por tenant; contraseña mínima 6 caracteres.
+- Guardas: no se puede dejar al tenant sin un **owner activo** (bloquea desactivar o cambiarle el
+  rol al último owner). Todo acotado al tenant por el global query filter.
+- Front: página **Personal** (`/staff`, solo owner/admin) con alta/edición, cambio de contraseña
+  y activar/desactivar.
 
 ## Pagos (en recepción)
 - El pago se cobra fuera del sistema; la recepción solo lo **registra** (`POST /api/payments/cash`,

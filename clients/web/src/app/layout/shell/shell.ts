@@ -32,6 +32,11 @@ import { AuthService } from '../../core/auth.service';
         <a routerLink="/plans" routerLinkActive="active">
           <i class="pi pi-tags"></i> Planes
         </a>
+        @if (auth.isManager()) {
+          <a routerLink="/staff" routerLinkActive="active">
+            <i class="pi pi-user-edit"></i> Personal
+          </a>
+        }
       </nav>
 
       <div class="user">

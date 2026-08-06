@@ -6,6 +6,7 @@ using GymFlow.Application.Features.Memberships;
 using GymFlow.Application.Features.Payments;
 using GymFlow.Application.Features.Plans;
 using GymFlow.Application.Features.Reports;
+using GymFlow.Application.Features.Staff;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GymFlow.Application;
@@ -22,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<IOverdueSweepService, OverdueSweepService>();
         services.AddScoped<ICheckInService, CheckInService>();
         services.AddScoped<IReportService, ReportService>();
+        services.AddScoped<IStaffService, StaffService>();
         return services;
     }
 }

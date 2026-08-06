@@ -32,6 +32,7 @@ Gimnasios independientes de barrio en Lima (1–3 sedes), dueño operador, que h
 | Reportes / dashboard | ✅ | Ingresos, churn, ocupación, morosidad |
 | **Check-in por código de 4 dígitos** | ✅ | Cada miembro tiene un código; la recepción lo teclea |
 | **Vencimientos + aviso por WhatsApp (manual)** | ✅ | Lista "por vencer" + botón `wa.me` con mensaje prellenado |
+| **Personal (staff)** | ✅ | CRUD de usuarios del panel con roles (owner/admin/recepción), reset de contraseña y activar/desactivar |
 | **WhatsApp automático (Meta Cloud API)** | ⏭️ Siguiente | Envío automático + recordatorio N días antes |
 | App móvil de miembros | ❌ Fuera de alcance | El software es solo para el gimnasio |
 | Pagos online / pasarela | ❌ Fuera de alcance | El pago no se hace dentro del sistema |
@@ -172,6 +173,8 @@ StaffUser
 - **Reportes & Dashboard** — ingresos, morosidad, churn, ocupación por hora.
 - **Vencimientos + aviso por WhatsApp (manual)** — página con las membresías por vencer y botón
   que abre `wa.me` con el mensaje prellenado para que la recepción lo envíe con un clic.
+- **Personal (staff)** — CRUD de usuarios del panel con roles (owner/admin/recepción), reset de
+  contraseña y activar/desactivar (`api/staff/*`, policy Manager). Guarda el último owner activo.
 
 ### Siguiente (núcleo del enfoque actual)
 1. **WhatsApp automático** — Meta WhatsApp Cloud API (envío automático del aviso, hoy manual) +
