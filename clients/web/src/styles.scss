@@ -1,5 +1,51 @@
 @use 'primeicons/primeicons.css';
 
+/* ============================================================
+   GymFlow · Sistema de marca
+   Primario  #2563EB (azul eléctrico)
+   Acento    #F97316 (naranja)
+   ============================================================ */
+:root {
+  /* Marca */
+  --brand: #2563eb;
+  --brand-600: #1d4ed8;
+  --brand-700: #1e40af;
+  --brand-900: #1e3a8a;
+  --brand-soft: #eff6ff;
+  --brand-ring: rgba(37, 99, 235, 0.35);
+
+  --accent: #f97316;
+  --accent-600: #ea580c;
+  --accent-soft: #fff7ed;
+
+  /* Superficies y texto */
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --border: #e6e9f0;
+  --border-strong: #d3d8e3;
+  --text: #111827;
+  --text-muted: #6b7280;
+
+  /* Estado */
+  --ok: #16a34a;
+  --ok-soft: #ecfdf5;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+
+  /* Forma y profundidad */
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.05);
+  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08), 0 2px 4px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 18px 40px rgba(16, 24, 40, 0.16);
+
+  /* Enlaza tokens de PrimeNG usados por las páginas */
+  --p-content-background: var(--surface);
+  --p-content-border-color: var(--border);
+  --p-text-muted-color: var(--text-muted);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -9,19 +55,21 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
-  background: var(--p-content-background, #f4f6f9);
-  color: var(--p-text-color, #1f2937);
+  font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
+h1, h2, h3 {
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Layout de página ---------- */
 .page {
-  padding: 1.5rem;
-  max-width: 1100px;
+  padding: 1.75rem 2rem;
+  max-width: 1180px;
   margin: 0 auto;
 }
 
@@ -29,13 +77,31 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
-.page-header h1 {
-  font-size: 1.5rem;
+.page-header h1,
+.page-header h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
   margin: 0;
+  position: relative;
+  padding-left: 0.85rem;
+}
+
+/* Barra de acento a la izquierda del título */
+.page-header h1::before,
+.page-header h2::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.15em;
+  bottom: 0.15em;
+  width: 4px;
+  border-radius: 4px;
+  background: linear-gradient(var(--brand), var(--accent));
 }
 
 .toolbar {
@@ -43,19 +109,35 @@ body {
   gap: 0.75rem;
   align-items: center;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
+/* ---------- Superficies reutilizables ---------- */
+.card,
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.panel {
+  padding: 1.25rem 1.35rem;
+  margin-bottom: 1.25rem;
+}
+
+/* ---------- Formularios ---------- */
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  margin-bottom: 1rem;
+  gap: 0.4rem;
+  margin-bottom: 1.1rem;
 }
 
 .field label {
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+  color: var(--text);
 }
 
 .grid-2 {
@@ -73,4 +155,88 @@ body {
   .grid-2 {
     grid-template-columns: 1fr;
   }
+  .page {
+    padding: 1.25rem 1rem;
+  }
+}
+
+/* ============================================================
+   Refinado de componentes PrimeNG (global)
+   ============================================================ */
+
+/* Botones: un poco más de cuerpo y una sombra sutil en los sólidos */
+.p-button {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+}
+.p-button:not(.p-button-text):not(.p-button-outlined):not(.p-button-secondary) {
+  box-shadow: 0 6px 16px -6px var(--brand-ring);
+}
+
+/* Utilidad: botón de acento (naranja) para CTAs destacados */
+.p-button.accent {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 8px 18px -6px rgba(249, 115, 22, 0.5) !important;
+}
+.p-button.accent:hover {
+  background: var(--accent-600) !important;
+  border-color: var(--accent-600) !important;
+}
+
+/* Inputs: foco de marca más claro */
+.p-inputtext:enabled:focus,
+.p-password-input:enabled:focus {
+  box-shadow: 0 0 0 3px var(--brand-ring) !important;
+  border-color: var(--brand) !important;
+}
+
+/* Tablas: cabecera limpia, filas con hover y separadores suaves */
+.p-datatable .p-datatable-thead > tr > th {
+  background: var(--surface-2) !important;
+  color: var(--text-muted) !important;
+  text-transform: uppercase;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.04em;
+  font-weight: 700 !important;
+  border-color: var(--border) !important;
+}
+.p-datatable .p-datatable-tbody > tr {
+  transition: background 0.15s ease;
+}
+.p-datatable .p-datatable-tbody > tr > td {
+  border-color: var(--border) !important;
+}
+.p-datatable .p-datatable-tbody > tr:hover {
+  background: var(--brand-soft) !important;
+}
+
+/* Tarjeta de tabla envuelta */
+.p-datatable {
+  border-radius: var(--radius) !important;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Diálogos: esquinas y sombra premium */
+.p-dialog {
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-lg) !important;
+  overflow: hidden;
+}
+.p-dialog .p-dialog-header {
+  border-bottom: 1px solid var(--border);
+}
+
+/* Tags redondeados */
+.p-tag {
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+}
+
+/* Scrollbar sutil */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }

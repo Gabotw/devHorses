@@ -3,37 +3,61 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0ea5e9 0%, #1e3a8a 100%);
-  padding: 1rem;
+  padding: 1.5rem;
+  background:
+    radial-gradient(90% 70% at 85% 10%, rgba(249, 115, 22, 0.28), transparent 55%),
+    radial-gradient(80% 80% at 10% 100%, rgba(37, 99, 235, 0.55), transparent 60%),
+    linear-gradient(135deg, #1e40af 0%, #172554 100%);
 }
 
 .card {
   background: #fff;
   width: 100%;
-  max-width: 380px;
-  padding: 2rem;
-  border-radius: 14px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  max-width: 400px;
+  padding: 2.25rem 2.25rem 2rem;
+  border-radius: 18px;
+  border: none;
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.45);
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: #0ea5e9;
+  gap: 0.7rem;
+  color: var(--text);
+}
+
+/* El rayo del template se convierte en la cajita de marca */
+.logo i {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-600));
+  color: #fff;
+  font-size: 1.2rem;
+  box-shadow: 0 8px 18px -6px rgba(249, 115, 22, 0.6);
 }
 
 .logo h1 {
   margin: 0;
-  font-size: 1.6rem;
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .sub {
-  margin: 0.25rem 0 1.5rem;
-  color: #6b7280;
-  font-size: 0.9rem;
+  margin: 0.5rem 0 1.75rem;
+  color: var(--text-muted);
+  font-size: 0.92rem;
 }
 
 :host ::ng-deep .w-full {
   width: 100%;
+}
+
+:host ::ng-deep .p-button {
+  margin-top: 0.4rem;
+  padding-block: 0.7rem;
 }

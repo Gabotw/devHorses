@@ -1,7 +1,7 @@
 <div class="page">
   <div class="page-header">
     <h1>Personal</h1>
-    <p-button label="Nuevo usuario" icon="pi pi-plus" (onClick)="openNew()" />
+    <p-button label="Nuevo usuario" icon="pi pi-plus" styleClass="accent" (onClick)="openNew()" />
   </div>
 
   <p-table [value]="users()" [loading]="loading()" [tableStyle]="{ 'min-width': '50rem' }" dataKey="id">
